@@ -6665,23 +6665,8 @@ char LivingLifePage::isCoveredByFloor( int inTileIndex ) {
         }
     return false;
     }
+
     
-    
-char LivingLifePage::isCoveredByFloor( int inTileIndex ) {
-    int i = inTileIndex;
-
-    int fID = mMapFloors[ i ];
-
-    if( fID > 0 && 
-        ! getObject( fID )->noCover ) {
-        return true;
-        }
-    return false;
-    }
-
-
-
-
 
 void LivingLifePage::draw( doublePair inViewCenter, 
                            double inViewSize ) {
@@ -15040,8 +15025,17 @@ void LivingLifePage::step() {
                                 // wrap around
                                 c -= NUM_BADGE_COLORS;
                                 }
-                            lo->personalLeadershipColor = getFloatColor(
-                                badgeColors[c] );
+                            // lo->personalLeadershipColor = getFloatColor(
+                            //     badgeColors[c] );
+                            // }
+                            //taghere
+                            FloatColor tempfloatcolor;
+                                sscanf( badgeColors[c], "#%x%x%x", 
+                                        &( tempfloatcolor.r ), 
+                                        &( tempfloatcolor.g ), 
+                                        &( tempfloatcolor.b ) );
+                            tempfloatcolor.a = 1.0;
+                            lo->personalLeadershipColor = tempfloatcolor;
                             }
                         }
                     }

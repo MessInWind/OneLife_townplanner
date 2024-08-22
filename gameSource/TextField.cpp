@@ -12,6 +12,8 @@
 
 
 
+
+
 // start:  none focused
 TextField *TextField::sFocusedTextField = NULL;
 
@@ -59,14 +61,14 @@ TextField::TextField( Font *inDisplayFont,
     
     if( inLabelText != NULL ) {
         mLabelText = stringDuplicate( inLabelText );
-        }
+    }
     
     if( inAllowedChars != NULL ) {
         mAllowedChars = stringDuplicate( inAllowedChars );
-        }
+    }
     if( inForbiddenChars != NULL ) {
         mForbiddenChars = stringDuplicate( inForbiddenChars );
-        }
+    }
 
     clearArrowRepeat();
         
@@ -95,16 +97,16 @@ TextField::TextField( Font *inDisplayFont,
             if( thisWidth > width ) {
                 width = thisWidth;
                 widestChar = pc;    
-                }
             }
         }
+    }
     
     
 
 
     for( int i=0; i<mCharsWide; i++ ) {
         fullString[i] = widestChar;
-        }
+    }
     fullString[ mCharsWide ] = '\0';
     
     double fullStringWidth = mFont->measureString( fullString );
@@ -116,7 +118,7 @@ TextField::TextField( Font *inDisplayFont,
     mDrawnTextX = - ( mWide / 2 - mBorderWide );
 
     mText[0] = '\0';
-    }
+}
 
 
 
@@ -152,7 +154,7 @@ TextField::~TextField() {
 
 void TextField::setContentsHidden( char inHidden ) {
     mContentsHidden = inHidden;
-    }
+}
 
 
 
@@ -172,8 +174,8 @@ void TextField::setText( const char *inText ) {
         
         if( processedChar != 0 ) {
             filteredText.push_back( processedChar );
-            }
         }
+    }
     
 
     mText = filteredText.getElementString();
@@ -186,49 +188,49 @@ void TextField::setText( const char *inText ) {
     mFirstDeleteRepeatDone = false;
 
     clearArrowRepeat();
-    }
+}
 
 
 
 char *TextField::getText() {
     return stringDuplicate( mText );
-    }
+}
 
 
 
 void TextField::setMaxLength( int inLimit ) {
     mMaxLength = inLimit;
-    }
+}
 
 
 
 int TextField::getMaxLength() {
     return mMaxLength;
-    }
+}
 
 
 
 char TextField::isAtLimit() {
     if( mMaxLength == -1 ) {
         return false;
-        }
+    }
     else {
         return ( mTextLen == mMaxLength );
-        }
     }
+}
     
 
 
 
 void TextField::setActive( char inActive ) {
     mActive = inActive;
-    }
+}
 
 
 
 char TextField::isActive() {
     return mActive;
-    }
+}
         
 
 
@@ -243,7 +245,7 @@ void TextField::step() {
         
         if( mFirstDeleteRepeatDone ) {
             stepsBetween = sDeleteNextDelaySteps;
-            }
+        }
         
         if( mHoldDeleteSteps > stepsBetween ) {
             // delete repeat
@@ -251,8 +253,8 @@ void TextField::step() {
             mFirstDeleteRepeatDone = true;
             
             deleteHit();
-            }
         }
+    }
 
 
     for( int i=0; i<2; i++ ) {
@@ -264,7 +266,7 @@ void TextField::step() {
         
             if( mFirstArrowRepeatDone[i] ) {
                 stepsBetween = sDeleteNextDelaySteps;
-                }
+            }
         
             if( mHoldArrowSteps[i] > stepsBetween ) {
                 // arrow repeat
@@ -278,24 +280,24 @@ void TextField::step() {
                     case 1:
                         rightHit();
                         break;
-                    }
                 }
             }
         }
-
-
     }
+}
 
         
         
 void TextField::draw() {
+
+    // AppLog::info( "mystd: begin" );
     
     if( mFocused ) {    
         setDrawColor( 1, 1, 1, 1 );
-        }
+    }
     else {
         setDrawColor( 0.5, 0.5, 0.5, 1 );
-        }
+    }
     
 
     drawRect( - mWide / 2, - mHigh / 2, 
@@ -330,7 +332,7 @@ void TextField::draw() {
         drawSprite( mHiddenSprite, pos );
         
         stopStencil();
-        }
+    }
     
 
 
@@ -344,32 +346,32 @@ void TextField::draw() {
         if( mLabelOnTop ) {
             xPos += mBorderWide + pixWidth;
             yPos = mHigh / 2 + 2 * mBorderWide;
-            }
+        }
 
         if( mLabelOnRight ) {
             a = alignLeft;
             xPos = -xPos;
-            }
+        }
         
         if( mLabelOnTop ) {
             // reverse align if on top
             if( a == alignLeft ) {
                 a = alignRight;
-                }
+            }
             else {
                 a = alignLeft;
-                }
             }
+        }
         
         doublePair labelPos = { xPos, yPos };
         
         mFont->drawString( mLabelText, labelPos, a );
-        }
+    }
     
     
     if( mContentsHidden ) {
         return;
-        }
+    }
 
 
     doublePair textPos = { - mWide/2 + mBorderWide, 0 };
@@ -409,7 +411,7 @@ void TextField::draw() {
                 textBeforeCursor = &( textBeforeCursor[1] );
                 
                 mCursorDrawPosition --;
-                }
+            }
         
             while( mFont->measureString( textAfterCursor ) > 
                    mWide / 2 - mBorderWide ) {
@@ -417,8 +419,8 @@ void TextField::draw() {
                 tooLongBack = true;
                 
                 textAfterCursor[ strlen( textAfterCursor ) - 1 ] = '\0';
-                }
             }
+        }
         else if( mFont->measureString( textBeforeCursor ) > 
                  mWide / 2 - mBorderWide ) {
 
@@ -436,9 +438,9 @@ void TextField::draw() {
                 
                 delete [] sumText;
                 sumText = concatonate( textBeforeCursor, textAfterCursor );
-                }
+            }
             delete [] sumText;
-            }    
+        }    
         else if( mFont->measureString( textAfterCursor ) > 
                  mWide / 2 - mBorderWide ) {
             
@@ -453,15 +455,15 @@ void TextField::draw() {
                 textAfterCursor[ strlen( textAfterCursor ) - 1 ] = '\0';
                 delete [] sumText;
                 sumText = concatonate( textBeforeCursor, textAfterCursor );
-                }
-            delete [] sumText;
             }
+            delete [] sumText;
         }
+    }
 
     
     if( mDrawnText != NULL ) {
         delete [] mDrawnText;
-        }
+    }
     
     mDrawnText = concatonate( textBeforeCursor, textAfterCursor );
 
@@ -472,7 +474,7 @@ void TextField::draw() {
     if( ! tooLongFront ) {
         mFont->drawString( mDrawnText, textPos, alignLeft );
         mDrawnTextX = textPos.x;
-        }
+    }
     else if( tooLongFront && ! tooLongBack ) {
         
         leftAlign = false;
@@ -481,7 +483,7 @@ void TextField::draw() {
 
         mFont->drawString( mDrawnText, textPos2, alignRight );
         mDrawnTextX = textPos2.x - mFont->measureString( mDrawnText );
-        }
+    }
     else {
         // text around perfectly centered cursor
         cursorCentered = true;
@@ -495,14 +497,14 @@ void TextField::draw() {
 
         mFont->drawString( mDrawnText, textPos2, alignLeft );
         mDrawnTextX = textPos2.x;
-        }
+    }
     
 
     double shadeWidth = 4 * mCharWidth;
     
     if( shadeWidth > middleWidth / 2 ) {
         shadeWidth = middleWidth / 2;
-        }
+    }
 
     if( tooLongFront ) {
         // draw shaded overlay over left of string
@@ -517,7 +519,7 @@ void TextField::draw() {
                                0.25, 0.25, 0.25, 0 };
 
         drawQuads( 1, verts , vertColors );
-        }
+    }
     if( tooLongBack ) {
         // draw shaded overlay over right of string
         
@@ -531,7 +533,7 @@ void TextField::draw() {
                                0.25, 0.25, 0.25, 1 };
 
         drawQuads( 1, verts , vertColors );
-        }
+    }
     
     if( mFocused && mCursorDrawPosition > -1 ) {            
         // make measurement to draw cursor
@@ -545,21 +547,21 @@ void TextField::draw() {
 
         if( cursorCentered ) {
             cursorXOffset = mWide / 2 - mBorderWide;
-            }
+        }
         else if( leftAlign ) {
             cursorXOffset = mFont->measureString( textBeforeCursor );
             if( cursorXOffset == 0 ) {
                 cursorXOffset -= pixWidth;
-                }
             }
+        }
         else {
             double afterLength = mFont->measureString( textAfterCursor );
             cursorXOffset = ( mWide - 2 * mBorderWide ) - afterLength;
 
             if( afterLength > 0 ) {
                 cursorXOffset -= pixWidth;
-                }
             }
+        }
         
 
         
@@ -571,7 +573,7 @@ void TextField::draw() {
                   rectStartY - pixWidth,
                   textPos.x + cursorXOffset + pixWidth, 
                   rectEndY + pixWidth );
-        }
+    }
     
     
     if( ! mActive ) {
@@ -579,18 +581,20 @@ void TextField::draw() {
         // dark overlay
         drawRect( - mWide / 2, - mHigh / 2, 
                   mWide / 2, mHigh / 2 );
-        }
+    }
         
 
     delete [] textBeforeCursorBase;
     delete [] textAfterCursorBase;
-    }
+
+    // AppLog::info( "mystd: end" );
+}
 
 
 void TextField::pointerUp( float inX, float inY ) {
     if( mIgnoreMouse ) {
         return;
-        }
+    }
     
     if( inX > - mWide / 2 &&
         inX < + mWide / 2 &&
@@ -603,7 +607,7 @@ void TextField::pointerUp( float inX, float inY ) {
 
         if( wasHidden ) {
             // don't adjust cursor from where it was
-            }
+        }
         else {
             
             int bestCursorDrawPosition = mCursorDrawPosition;
@@ -631,15 +635,15 @@ void TextField::pointerUp( float inX, float inY ) {
                 if( thisDistance < bestDistance ) {
                     bestCursorDrawPosition = i;
                     bestDistance = thisDistance;
-                    }
                 }
+            }
             
             int cursorDelta = bestCursorDrawPosition - mCursorDrawPosition;
             
             mCursorPosition += cursorDelta;
-            }
         }
     }
+}
 
 
 
@@ -650,7 +654,7 @@ unsigned char TextField::processCharacter( unsigned char inASCII ) {
         
     if( mForceCaps ) {
         processedChar = toupper( inASCII );
-        }
+    }
 
     if( mForbiddenChars != NULL ) {
         int num = strlen( mForbiddenChars );
@@ -658,9 +662,9 @@ unsigned char TextField::processCharacter( unsigned char inASCII ) {
         for( int i=0; i<num; i++ ) {
             if( mForbiddenChars[i] == processedChar ) {
                 return 0;
-                }
             }
         }
+    }
         
 
     if( mAllowedChars != NULL ) {
@@ -672,25 +676,25 @@ unsigned char TextField::processCharacter( unsigned char inASCII ) {
             if( mAllowedChars[i] == processedChar ) {
                 allowed = true;
                 break;
-                }
             }
+        }
 
         if( !allowed ) {
             return 0;
-            }
         }
+    }
     else {
         // no allowed list specified 
         
         if( processedChar == '\r' || processedChar == '\n' ) {
             // \r and \n only permitted if it is listed explicitly
             return 0;
-            }
         }
+    }
         
 
     return processedChar;
-    }
+}
 
 
 
@@ -699,7 +703,7 @@ void TextField::insertCharacter( unsigned char inASCII ) {
     if( isAnythingSelected() ) {
         // delete selected first
         deleteHit();
-        }
+    }
 
     // add to it
     char *oldText = mText;
@@ -708,7 +712,7 @@ void TextField::insertCharacter( unsigned char inASCII ) {
         strlen( oldText ) >= (unsigned int) mMaxLength ) {
         // max length hit, don't add it
         return;
-        }
+    }
     
 
     char *preCursor = stringDuplicate( mText );
@@ -724,7 +728,7 @@ void TextField::insertCharacter( unsigned char inASCII ) {
     delete [] oldText;
     
     mCursorPosition++;
-    }
+}
 
 
 
@@ -732,7 +736,7 @@ void TextField::insertString( char *inString ) {
     if( isAnythingSelected() ) {
         // delete selected first
         deleteHit();
-        }
+    }
     
     // add to it
     char *oldText = mText;
@@ -757,7 +761,7 @@ void TextField::insertString( char *inString ) {
         delete [] longString;
         
         mTextLen = strlen( mText );
-        }
+    }
     
 
     delete [] preCursor;
@@ -768,49 +772,49 @@ void TextField::insertString( char *inString ) {
 
     if( mCursorPosition > mTextLen ) {
         mCursorPosition = mTextLen;
-        }
     }
+}
 
 
 
 int TextField::getCursorPosition() {
     return mCursorPosition;
-    }
+}
 
 
 void TextField::cursorReset() {
     mCursorPosition = 0;
-    }
+    }   
 
 
 
 void TextField::setIgnoreArrowKeys( char inIgnore ) {
     mIgnoreArrowKeys = inIgnore;
-    }
+}
 
 
 
 void TextField::setIgnoreMouse( char inIgnore ) {
     mIgnoreMouse = inIgnore;
-    }
+}
 
 
 
 double TextField::getRightEdgeX() {
     
     return mX + mWide / 2;
-    }
+}
 
 
 
 void TextField::setFireOnAnyTextChange( char inFireOnAny ) {
     mFireOnAnyChange = inFireOnAny;
-    }
+}
 
 
 void TextField::setFireOnLoseFocus( char inFireOnLeave ) {
     mFireOnLeave = inFireOnLeave;
-    }
+}
 
 
 
@@ -818,7 +822,7 @@ void TextField::setFireOnLoseFocus( char inFireOnLeave ) {
 void TextField::keyDown( unsigned char inASCII ) {
     if( !mFocused ) {
         return;
-        }
+    }
     mCursorFlashSteps = 0;
     
     if( isCommandKeyDown() ) {
@@ -842,8 +846,8 @@ void TextField::keyDown( unsigned char inASCII ) {
                     if( processedChar != 0 ) {
                         
                         insertCharacter( processedChar );
-                        }
                     }
+                }
                 delete [] clipboardText;
                 
                 mHoldDeleteSteps = -1;
@@ -853,9 +857,9 @@ void TextField::keyDown( unsigned char inASCII ) {
                 
                 if( mFireOnAnyChange ) {
                     fireActionPerformed( this );
-                    }
                 }
             }
+        }
 
         // but ONLY if it's an alphabetical key (A-Z,a-z)
         // Some international keyboards use ALT to type certain symbols
@@ -865,9 +869,9 @@ void TextField::keyDown( unsigned char inASCII ) {
             ( inASCII >= 'a' && inASCII <= 'z' ) ) {
             
             return;
-            }
-        
         }
+    
+    }
     
 
     if( inASCII == 127 || inASCII == 8 ) {
@@ -877,7 +881,7 @@ void TextField::keyDown( unsigned char inASCII ) {
         mHoldDeleteSteps = 0;
 
         clearArrowRepeat();
-        }
+    }
     else if( inASCII == 13 ) {
         // enter hit in field
         unsigned char processedChar = processCharacter( inASCII );    
@@ -893,13 +897,13 @@ void TextField::keyDown( unsigned char inASCII ) {
             
             if( mFireOnAnyChange ) {
                 fireActionPerformed( this );
-                }
             }
+        }
         else {
             // newline not allowed in this field
             fireActionPerformed( this );
-            }
         }
+    }
     else if( inASCII >= 32 ) {
 
         unsigned char processedChar = processCharacter( inASCII );    
@@ -907,7 +911,7 @@ void TextField::keyDown( unsigned char inASCII ) {
         if( processedChar != 0 ) {
             
             insertCharacter( processedChar );
-            }
+        }
         
         mHoldDeleteSteps = -1;
         mFirstDeleteRepeatDone = false;
@@ -916,9 +920,9 @@ void TextField::keyDown( unsigned char inASCII ) {
 
         if( mFireOnAnyChange ) {
             fireActionPerformed( this );
-            }
-        }    
-    }
+        }
+    }    
+}
 
 
 
@@ -927,8 +931,8 @@ void TextField::keyUp( unsigned char inASCII ) {
         // end delete hold down
         mHoldDeleteSteps = -1;
         mFirstDeleteRepeatDone = false;
-        }
     }
+}
 
 
 
@@ -948,7 +952,7 @@ void TextField::deleteHit() {
 
             mSelectionStart = -1;
             mSelectionEnd = -1;
-            }
+        }
         else if( isCommandKeyDown() ) {
             // word delete 
 
@@ -959,15 +963,15 @@ void TextField::deleteHit() {
                    mText[ newCursorPos - 1 ] != ' ' &&
                    mText[ newCursorPos - 1 ] != '\r' ) {
                 newCursorPos --;
-                }
+            }
         
             // skip space and newline characters
             while( newCursorPos > 0 &&
                    ( mText[ newCursorPos - 1 ] == ' ' ||
                      mText[ newCursorPos - 1 ] == '\r' ) ) {
                 newCursorPos --;
-                }
             }
+        }
         
         // section cleared no matter what when delete is hit
         mSelectionStart = -1;
@@ -991,9 +995,9 @@ void TextField::deleteHit() {
 
         if( mFireOnAnyChange ) {
             fireActionPerformed( this );
-            }
         }
     }
+}
 
 
 
@@ -1001,8 +1005,8 @@ void TextField::clearArrowRepeat() {
     for( int i=0; i<2; i++ ) {
         mHoldArrowSteps[i] = -1;
         mFirstArrowRepeatDone[i] = false;
-        }
     }
+}
 
 
 
@@ -1014,20 +1018,20 @@ void TextField::leftHit() {
             mSelectionStart = mCursorPosition;
             mSelectionEnd = mCursorPosition;
             mSelectionAdjusting = &mSelectionStart;
-            }
+        }
         else {
             mCursorPosition = *mSelectionAdjusting;
-            }
         }
+    }
 
     if( ! isShiftKeyDown() ) {
         if( isAnythingSelected() ) {
             mCursorPosition = mSelectionStart + 1;
-            }
+        }
 
         mSelectionStart = -1;
         mSelectionEnd = -1;
-        }
+    }
 
     if( isCommandKeyDown() ) {
         // word jump 
@@ -1037,29 +1041,29 @@ void TextField::leftHit() {
                mText[ mCursorPosition - 1 ] != ' ' &&
                mText[ mCursorPosition - 1 ] != '\r' ) {
             mCursorPosition --;
-            }
+        }
         
         // skip space and newline characters
         while( mCursorPosition > 0 &&
                ( mText[ mCursorPosition - 1 ] == ' ' ||
                  mText[ mCursorPosition - 1 ] == '\r' ) ) {
             mCursorPosition --;
-            }
-        
         }
+    
+    }
     else {    
         mCursorPosition --;
         if( mCursorPosition < 0 ) {
             mCursorPosition = 0;
-            }
         }
+    }
 
     if( isShiftKeyDown() && mShiftPlusArrowsCanSelect ) {
         *mSelectionAdjusting = mCursorPosition;
         fixSelectionStartEnd();
-        }
-
     }
+
+}
 
 
 
@@ -1071,20 +1075,20 @@ void TextField::rightHit() {
             mSelectionStart = mCursorPosition;
             mSelectionEnd = mCursorPosition;
             mSelectionAdjusting = &mSelectionEnd;
-            }
+        }
         else {
             mCursorPosition = *mSelectionAdjusting;
-            }
         }
+    }
     
     if( ! isShiftKeyDown() ) {
         if( isAnythingSelected() ) {
             mCursorPosition = mSelectionEnd - 1;
-            }
+        }
             
         mSelectionStart = -1;
         mSelectionEnd = -1;
-        }
+    }
 
     if( isCommandKeyDown() ) {
         // word jump 
@@ -1095,30 +1099,30 @@ void TextField::rightHit() {
                ( mText[ mCursorPosition ] == ' ' ||
                  mText[ mCursorPosition ] == '\r'  ) ) {
             mCursorPosition ++;
-            }
+        }
 
         // skip non-space and non-newline characters
         while( mCursorPosition < textLen &&
                mText[ mCursorPosition ] != ' ' &&
                mText[ mCursorPosition ] != '\r' ) {
             mCursorPosition ++;
-            }
-        
-        
         }
+        
+        
+    }
     else {
         mCursorPosition ++;
         if( mCursorPosition > (int)strlen( mText ) ) {
             mCursorPosition = strlen( mText );
-            }
         }
+    }
 
     if( isShiftKeyDown() && mShiftPlusArrowsCanSelect ) {
         *mSelectionAdjusting = mCursorPosition;
         fixSelectionStartEnd();
-        }
-    
     }
+
+}
 
 
 
@@ -1126,7 +1130,7 @@ void TextField::rightHit() {
 void TextField::specialKeyDown( int inKeyCode ) {
     if( !mFocused ) {
         return;
-        }
+    }
     
     mCursorFlashSteps = 0;
     
@@ -1136,20 +1140,20 @@ void TextField::specialKeyDown( int inKeyCode ) {
                 leftHit();
                 clearArrowRepeat();
                 mHoldArrowSteps[0] = 0;
-                }
+            }
             break;
         case MG_KEY_RIGHT:
             if( ! mIgnoreArrowKeys ) {
                 rightHit(); 
                 clearArrowRepeat();
                 mHoldArrowSteps[1] = 0;
-                }
+            }
             break;
         default:
             break;
-        }
-    
     }
+
+}
 
 
 
@@ -1157,12 +1161,12 @@ void TextField::specialKeyUp( int inKeyCode ) {
     if( inKeyCode == MG_KEY_LEFT ) {
         mHoldArrowSteps[0] = -1;
         mFirstArrowRepeatDone[0] = false;
-        }
+    }
     else if( inKeyCode == MG_KEY_RIGHT ) {
         mHoldArrowSteps[1] = -1;
         mFirstArrowRepeatDone[1] = false;
-        }
     }
+}
 
 
 
@@ -1171,7 +1175,7 @@ void TextField::focus() {
     if( sFocusedTextField != NULL && sFocusedTextField != this ) {
         // unfocus last focused
         sFocusedTextField->unfocus();
-        }
+    }
 		
 	DropdownList::unfocusAll();
 
@@ -1179,7 +1183,7 @@ void TextField::focus() {
     sFocusedTextField = this;
 
     mContentsHidden = false;
-    }
+}
 
 
 
@@ -1196,15 +1200,15 @@ void TextField::unfocus() {
         sFocusedTextField = NULL;
         if( mFireOnLeave ) {
             fireActionPerformed( this );
-            }
-        }    
-    }
+        }
+    }    
+}
 
 
 
 char TextField::isFocused() {
     return mFocused;
-    }
+}
 
 
 
@@ -1212,16 +1216,16 @@ void TextField::setDeleteRepeatDelays( int inFirstDelaySteps,
                                        int inNextDelaySteps ) {
     sDeleteFirstDelaySteps = inFirstDelaySteps;
     sDeleteNextDelaySteps = inNextDelaySteps;
-    }
+}
 
 
 
 char TextField::isAnyFocused() {
     if( sFocusedTextField != NULL ) {
         return true;
-        }
-    return false;
     }
+    return false;
+}
 
 
         
@@ -1230,10 +1234,10 @@ void TextField::unfocusAll() {
     if( sFocusedTextField != NULL ) {
         // unfocus last focused
         sFocusedTextField->unfocus();
-        }
+    }
 
     sFocusedTextField = NULL;
-    }
+}
 
 
 
@@ -1248,7 +1252,7 @@ int TextField::getInt() {
     delete [] text;
             
     return i;
-    }
+}
 
         
         
@@ -1262,7 +1266,7 @@ float TextField::getFloat() {
     delete [] text;
     
     return f;
-    }
+}
 
 
 
@@ -1271,7 +1275,7 @@ void TextField::setInt( int inI ) {
     
     setText( text );
     delete [] text;
-    }
+}
 
         
 
@@ -1282,10 +1286,10 @@ void TextField::setFloat( float inF, int inDigitsAfterDecimal,
     
     if( inDigitsAfterDecimal == -1 ) {
         formatString = stringDuplicate( "%f" );
-        }
+    }
     else {
         formatString = autoSprintf( "%%.%df", inDigitsAfterDecimal );
-        }
+    }
 
     char *text = autoSprintf( formatString, inF );
     
@@ -1296,30 +1300,30 @@ void TextField::setFloat( float inF, int inDigitsAfterDecimal,
             if( text[index-1] == '.' ) {
                 // leave one zero after .
                 break;
-                }
+            }
             text[index] = '\0';
             index --;
-            }
         }
+    }
 
     delete [] formatString;
 
     setText( text );
     delete [] text;
-    }
+}
 
 
 
 
 void TextField::setLabelSide( char inLabelOnRight ) {
     mLabelOnRight = inLabelOnRight;
-    }
+}
 
 
 
 void TextField::setLabelTop( char inLabelOnTop ) {
     mLabelOnTop = inLabelOnTop;
-    }
+}
 
 
         
@@ -1328,7 +1332,7 @@ char TextField::isAnythingSelected() {
         ( mSelectionStart != -1 && 
           mSelectionEnd != -1 &&
           mSelectionStart != mSelectionEnd );
-    }
+}
 
 
 
@@ -1336,7 +1340,7 @@ char *TextField::getSelectedText() {
 
     if( ! isAnythingSelected() ) {
         return NULL;
-        }
+    }
     
     char *textCopy = stringDuplicate( mText );
 
@@ -1349,7 +1353,7 @@ char *TextField::getSelectedText() {
     delete [] textCopy;
     
     return returnVal;
-    }
+}
 
 
 
@@ -1361,27 +1365,27 @@ void TextField::fixSelectionStartEnd() {
 
         if( mSelectionAdjusting == &mSelectionStart ) {
             mSelectionAdjusting = &mSelectionEnd;
-            }
+        }
         else if( mSelectionAdjusting == &mSelectionEnd ) {
             mSelectionAdjusting = &mSelectionStart;
-            }
         }
+    }
     else if( mSelectionEnd == mSelectionStart ) {
         mSelectionAdjusting = &mSelectionEnd;
-        }
-    
     }
+
+}
 
 
 
 void TextField::setShiftArrowsCanSelect( char inCanSelect ) {
     mShiftPlusArrowsCanSelect = inCanSelect;
-    }
+}
 
 
 
 void TextField::usePasteShortcut( char inShortcutOn ) {
     mUsePasteShortcut = inShortcutOn;
-    }
+}
 
 

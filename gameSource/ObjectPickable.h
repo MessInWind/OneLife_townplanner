@@ -10,7 +10,7 @@
 #include "transitionBank.h"
 #include "categoryBank.h"
 
-
+#include "minorGems/util/log/AppLog.h"
 
 #ifndef OHOL_NON_EDITOR
 
@@ -69,8 +69,10 @@ class ObjectPickable : public Pickable {
         virtual void draw( void *inObject, doublePair inPos ) {
             ObjectRecord *r = (ObjectRecord*)inObject;
 
-            
+            // AppLog::info( "mystd: begin" );
+            // AppLog::infoF( "mystd: Drawing object %d, %s", r->id, r->description );
             int maxD = getMaxDiameter( r );
+            // AppLog::info( "mystd: end" );
             
             double zoom = 1;
 
@@ -78,7 +80,12 @@ class ObjectPickable : public Pickable {
                 zoom = 64.0 / maxD;
                 }
             
-            inPos = sub( inPos, mult( getObjectCenterOffset( r ), zoom ) );
+            doublePair c = getObjectCenterOffset( r );
+            // take off contained offset, since it doesn't apply here
+            c.x -= r->containOffsetX;
+            c.y -= r->containOffsetY;
+
+            inPos = sub( inPos, mult( c, zoom ) );
 
             drawObject( r, 2, inPos, 0, false, false, 20, 0, false, false,
                         getEmptyClothingSet(), zoom );

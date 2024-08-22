@@ -738,12 +738,12 @@ void stepSpriteBank() {
 
 SpriteRecord *getSpriteRecord( int inID ) {
     if( inID < mapSize ) {
-        return idMap[inID];
-        }
+        return idMap[inID]; // 不知道为什么会有NULL的情况
+    }
     else {
         return NULL;
-        }
     }
+}
 
 
 

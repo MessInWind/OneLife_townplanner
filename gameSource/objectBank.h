@@ -294,6 +294,8 @@ typedef struct ObjectRecord {
         
         char *spriteInvisibleWhenContained;
         
+        char *spriteIgnoredWhenCalculatingCenterOffset;
+        
         
         // flags for sprites that are special body parts
         char *spriteIsHead;
@@ -491,6 +493,13 @@ typedef struct ObjectRecord {
         char hasBadgePos;
         doublePair badgePos;
 
+
+        // optional offset to default contained position for an object
+        // Code estimates an ideal contained position based on widest or lowest sprite,
+        // but this produces weird results in some cases.
+        int containOffsetX;
+        int containOffsetY;
+
     } ObjectRecord;
 
 
@@ -633,6 +642,8 @@ int addObject( const char *inDescription,
                int inFoodValue,
                int inBonusValue,
                float inSpeedMult,
+               int inContainOffsetX,
+               int inContainOffsetY,
                doublePair inHeldOffset,
                char inClothing,
                doublePair inClothingOffset,
@@ -663,6 +674,7 @@ int addObject( const char *inDescription,
                int *inSpriteInvisibleWhenWorn,
                char *inSpriteBehindSlots,
                char *inSpriteInvisibleWhenContained,
+               char *inSpriteIgnoredWhenCalculatingCenterOffset,
                char *inSpriteIsHead,
                char *inSpriteIsBody,
                char *inSpriteIsBackFoot,
@@ -902,6 +914,7 @@ float getBiomeHeatValue( int inBiome );
 
 
 
+
 // offset of object pixel center from 0,0
 // note that this is computed based on the center of the widest sprite
 doublePair getObjectCenterOffset( ObjectRecord *inObject );
@@ -910,6 +923,9 @@ doublePair getObjectCenterOffset( ObjectRecord *inObject );
 // this is computed based on the center of the lower-most sprite
 // in the object
 doublePair getObjectBottomCenterOffset( ObjectRecord *inObject );
+
+
+doublePair getObjectWidestSpriteCenterOffset( ObjectRecord *inObject );
 
 
 
@@ -955,6 +971,11 @@ void setupSpriteUseVis( ObjectRecord *inObject, int inUsesRemaining,
 void setupNumericSprites( ObjectRecord *inObject, int inVarNumber,
                           int inMax,
                           char *inSpriteVis );
+
+
+
+doublePair computeContainedCenterOffset( ObjectRecord *inContainerObject, 
+                                         ObjectRecord *inContainedObject );
 
 
 

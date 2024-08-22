@@ -351,7 +351,6 @@ typedef struct LiveObject {
         FloatColor badgeColor;
 
         FloatColor personalLeadershipColor;
-        
 
         // does the local player see this person as exiled?
         char isExiled;
@@ -371,6 +370,7 @@ typedef struct LiveObject {
         char isGeneticFamily;
         
     } LiveObject;
+
 
 
 

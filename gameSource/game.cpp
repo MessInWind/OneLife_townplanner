@@ -704,7 +704,7 @@ void initFrameDrawer( int inWidth, int inHeight, int inTargetFrameRate,
     currentGamePage->base_makeActive( true );
 
     initDone = true;
-    }
+}
 
 
 

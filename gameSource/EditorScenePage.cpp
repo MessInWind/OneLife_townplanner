@@ -44,7 +44,9 @@ extern double viewHeight;
 
 extern Font *mainFont;
 extern Font *smallFont;
+extern Font *handwritingFont;
 
+#include "minorGems/util/log/AppLog.h"
 
 #include "GroundPickable.h"
 
@@ -99,49 +101,26 @@ EditorScenePage::EditorScenePage()
         : mPlayingTime( false ),
           mRecordingFrames( false ),
 		  
-		  // mUndoButton( smallFont, -877, 340, "Undo" ),
-		  // mRedoButton( smallFont, -817, 340, "Redo" ),
-		  mUndoButton( smallFont, -(int)( viewWidth/2 * 0.75 ) - 55, (int)( viewWidth*viewHeightFraction * 0.32 ), "Undo" ),
-		  mRedoButton( smallFont, mUndoButton.getPosition().x + 60, mUndoButton.getPosition().y, "Redo" ),
-		  
-		  
+		  mUndoButton( smallFont, -(int)( viewWidth/2 * 0.75 ) - 55, (int)( viewWidth*viewHeightFraction * 0.32 ), "撤销" ),
+		  mRedoButton( smallFont, mUndoButton.getPosition().x + 60, mUndoButton.getPosition().y, "反撤销" ),
 		  
           mAnimEditorButton( mainFont, 210, 260, "Anim" ),
 		  
-          // mGroundPicker( &groundPickable, -410, 90 ),
-          // mObjectPicker( &objectPickable, 410, 90 ),
-          // mGroundPicker( &groundPickable, 820, 90 ),
-          // mObjectPicker( &objectPickable, -820, 90 ),
 		  mGroundPicker( &groundPickable, (int)( viewWidth/2 * 0.75 ), (int)( viewWidth*viewHeightFraction * 0.15 ) ),
 		  mObjectPicker( &objectPickable, (int)( -viewWidth/2 * 0.75 ), (int)( viewWidth*viewHeightFraction * 0.15 ) ),
 		  
+		  mDeleteButton( smallFont, (int)( viewWidth/2 * 0.75 ), mUndoButton.getPosition().y - 70, "删除文件" ),
+		  mConfirmDeleteButton( smallFont, mDeleteButton.getPosition().x, mDeleteButton.getPosition().y, "确定 ?" ),
 		  
+		  mSaveTestMapButton( smallFont, (int)( viewWidth/2 * 0.75 ), mUndoButton.getPosition().y - 35, "导出测试地图" ),
 		  
-          // mDeleteButton( smallFont, 820, 220, "Delete file" ),
-		  mDeleteButton( smallFont, (int)( viewWidth/2 * 0.75 ), mUndoButton.getPosition().y - 70, "Delete file" ),
-		  mConfirmDeleteButton( smallFont, mDeleteButton.getPosition().x, mDeleteButton.getPosition().y, "Confirm ?" ),
+		  mSaveNewButton( smallFont, (int)( viewWidth/2 * 0.75 ) + 30, mUndoButton.getPosition().y, "另存为" ),
 		  
+		  mClearSceneButton( smallFont, (int)( viewWidth/2 * 0.75 ) - 50, mUndoButton.getPosition().y, "新建" ),
 		  
-          // mSaveTestMapButton( smallFont, -300, 200, "Export Test Map" ),
-		  // mSaveTestMapButton( smallFont, 820, 260, "Export Test Map" ),
-		  mSaveTestMapButton( smallFont, (int)( viewWidth/2 * 0.75 ), mUndoButton.getPosition().y - 35, "Export Test Map" ),
-		  
-		  
-          // mSaveNewButton( smallFont, -300, 260, "Save New" ),
-		  // mSaveNewButton( smallFont, 820 + 30, 300, "Save New" ),
-		  mSaveNewButton( smallFont, (int)( viewWidth/2 * 0.75 ) + 30, mUndoButton.getPosition().y, "Save New" ),
-		  
-		  
-		  // mClearSceneButton( smallFont, 820 - 50, 300, "New" ),
-		  mClearSceneButton( smallFont, (int)( viewWidth/2 * 0.75 ) - 50, mUndoButton.getPosition().y, "New" ),
-		  
-
-		  // mReplaceButton( smallFont, -500, 260, "Replace" ),
-		  // mReplaceButton( smallFont, 820, 340, "Save" ),
-		  mReplaceButton( smallFont, (int)( viewWidth/2 * 0.75 ), mUndoButton.getPosition().y + 35, "Save" ),
-		  mConfirmReplaceButton( smallFont, mReplaceButton.getPosition().x, mReplaceButton.getPosition().y, "Confirm ?" ),
-          // mNextSceneButton( smallFont, -420, 260, ">" ),
-          // mPrevSceneButton( smallFont, -580, 260, "<" ),
+		  mReplaceButton( smallFont, (int)( viewWidth/2 * 0.75 ), mUndoButton.getPosition().y + 35, "覆盖" ),
+		  mConfirmReplaceButton( smallFont, mReplaceButton.getPosition().x, mReplaceButton.getPosition().y, "确定 ?" ),
+          
           mNextSceneButton( smallFont, mReplaceButton.getPosition().x + 60, mReplaceButton.getPosition().y, ">" ),
           mPrevSceneButton( smallFont, mReplaceButton.getPosition().x - 60, mReplaceButton.getPosition().y, "<" ),
 		  
@@ -386,7 +365,6 @@ EditorScenePage::EditorScenePage()
             mNextFile->writeToFile( mNextSceneNumber );
             }
         
-//        mNextSceneNumber = mNextFile->readFileIntContents( 0 );
         File **sceneFiles = mScenesFolder.getChildFiles( &mNextSceneNumber ); // Get the number of scenes we have.
 	for (int i = 0; i<mNextSceneNumber; i++) {
             delete sceneFiles[i];
@@ -512,16 +490,13 @@ void EditorScenePage::actionPerformed( GUIComponent *inTarget ) {
 		// pickedOID = 0;
 		mGroundPickerClicked = true;
 
-        }
+    }
     else if( inTarget == &mObjectPicker ) {
 		
-		// char oWasRightClick = false;
-		// pickedOID = mObjectPicker.getSelectedObject( &oWasRightClick );
 		mGroundPicker.unselectObject();
-		// pickedGID = -1;
 		mObjectPickerClicked = true;
 		
-        }
+    }
     else if( inTarget == &mSaveNewButton ) {
 
         writeSceneToFile( mNextSceneNumber );
@@ -976,33 +951,6 @@ void EditorScenePage::checkVisible() {
 	
 	mShiftX = 0-curFocusX;
 	mShiftY = curFocusY-0;
-	
-    // if( curFocusX >= 4 && curFocusX <= 7 ) {
-        // mShiftX = 0;
-        // }
-    // else {
-        // if( curFocusX < 4 ) {
-            // mShiftX = 4 - curFocusX;
-            // }
-        // else {
-            // mShiftX = 7 - curFocusX;
-            // }
-        // }
-    
-    // if( curFocusY >= 2 && curFocusY <= 4 ) {
-        // mShiftY = 0;
-        // }
-    // else {
-        // if( curFocusY < 2 ) {
-            // mShiftY = curFocusY - 2;
-            // }
-        // else {
-            // mShiftY = curFocusY - 4;
-            // }
-        // }
-
-    // make all visible, then turn some off selectively
-    // below
     
 	mUndoButton.setVisible( true );
 	mRedoButton.setVisible( true );
@@ -1287,7 +1235,8 @@ static void drawOutlineString( const char *inString,
 
 void EditorScenePage::drawUnderComponents( doublePair inViewCenter, 
                                            double inViewSize ) {
-    
+    // AppLog::info( "mystd: begin" );
+
     mFrameCount ++;
 
     // step any moving cells
@@ -2154,11 +2103,6 @@ void EditorScenePage::drawUnderComponents( doublePair inViewCenter,
         drawSprite( mPersonDestSprite, markPos );
         }
     
-    
-
-    // doublePair legendPos = mAnimEditorButton.getPosition();
-    // legendPos.x = -150;
-    // legendPos.y += 20;
 	
 	doublePair legendPos = mObjectPicker.getPosition();
 	legendPos.y -= 325;
@@ -2236,7 +2180,7 @@ void EditorScenePage::drawUnderComponents( doublePair inViewCenter,
 		pos.y -= 25;
 		pos.x -= 40;
         
-        char *s = autoSprintf( "Picked: #%d  %s", pickedOID,
+        char *s = autoSprintf( "选中: #%d  %s", pickedOID,
                                getObject( pickedOID )->description );
         
 
@@ -2249,7 +2193,7 @@ void EditorScenePage::drawUnderComponents( doublePair inViewCenter,
 		pos.y -= 50;
 		pos.x -= 40;
         
-        char *s = autoSprintf( "Drawn: #%d  %s", c->oID,
+        char *s = autoSprintf( "绘制: #%d  %s", c->oID,
                                getObject( c->oID )->description );
         
 
@@ -2335,14 +2279,14 @@ void EditorScenePage::drawUnderComponents( doublePair inViewCenter,
         // pos.x -= 40;
 		
 		if (mSceneID == -1) {
-			char *s = autoSprintf( "Unsaved Scene*" );
+			char *s = autoSprintf( "未保存的场景*" );
 			drawOutlineString( s, pos, alignCenter );
 			delete [] s;
 		} else {
 			if (mapChanged) { // Output the current scene filename to the screen.
 				File *f = getSceneFile( mSceneID );
 				char *n = f->getFileName();
-				char *s = autoSprintf( "Scene %s*", n );
+				char *s = autoSprintf( "场景 %s*", n );
 				drawOutlineString( s, pos, alignCenter );
 				delete [] n;
 				delete f;
@@ -2350,7 +2294,7 @@ void EditorScenePage::drawUnderComponents( doublePair inViewCenter,
 			} else {
 				File *f = getSceneFile( mSceneID );
 				char *n = f->getFileName();
-				char *s = autoSprintf( "Scene %s", n );
+				char *s = autoSprintf( "场景 %s", n );
 				drawOutlineString( s, pos, alignCenter );
 				delete [] n;
 				delete f;
@@ -2361,8 +2305,9 @@ void EditorScenePage::drawUnderComponents( doublePair inViewCenter,
 		
         // }
     
+    // AppLog::info( "mystd: end" );
 
-    }
+}
 
 
 
@@ -2370,7 +2315,7 @@ void EditorScenePage::makeActive( char inFresh ) {
     
     if( !inFresh ) {
         return;
-        }
+    }
     
     int grave = getRandomDeathMarker();
 
@@ -2378,8 +2323,8 @@ void EditorScenePage::makeActive( char inFresh ) {
         for( int x=0; x<mSceneW; x++ ) {
             SceneCell *p = &( mPersonCells[y][x] );
             p->graveID = grave;
-            }
         }
+    }
     mEmptyCell.graveID = grave;
     
     TextField::unfocusAll();
@@ -2389,7 +2334,7 @@ void EditorScenePage::makeActive( char inFresh ) {
 
     mLittleDheld = false;
     mBigDheld = false;
-    }
+}
 
 
 void EditorScenePage::step() {
@@ -2457,7 +2402,9 @@ extern char leftKey;
 extern char downKey;
 extern char rightKey;
 
-void EditorScenePage::keyDown( unsigned char inASCII ) {
+void EditorScenePage::keyDown( unsigned char inASCII ) { // 中文支持
+
+    // AppLog::info("mystd: begin");
 	
 	// if (isShiftKeyDown()) shiftDown = true;
     // if (isCommandKeyDown()) ctrlDown = true;
@@ -2468,7 +2415,7 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
         // enter
         // return to cursor control
         TextField::unfocusAll();
-        }
+    }
     
     bool commandKey = isCommandKeyDown();
     if ( mShowUI ) {
@@ -2506,7 +2453,7 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
     if( TextField::isAnyFocused() ) {
         mShowUI = true;
         return;
-        }
+    }
     
     if ( tolower(inASCII) == 'e' ) {
         mShowUI = ! mShowUI;
@@ -2514,17 +2461,17 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
     }
     if( tolower(inASCII) == 'z' ) {
         if (mShowUI) undo();
-        }
+    }
 		
     if( tolower(inASCII) == 'x' ) {
         if (mShowUI) redo();
-        }
+    }
     
     if( inASCII == '=' ) {
         // screen shot
         // don't checkVisible, because it makes cur cell border appear
         return;
-        }
+    }
         
     if( cursorGridX < 0 ||
         cursorGridY < 0 ||
@@ -2731,28 +2678,24 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
 	return;
 	
     
-    // if( inASCII == 'h' ) {
-        // mShowUI = ! mShowUI;
-        // skipDrawingSubComponents( ! mShowUI );
-        // }
     if( inASCII == 'w' ) {
         mShowWhite = ! mShowWhite;
-        }
+    }
     else if( inASCII == 't' ) {
         mFrameCount = 0;
         restartAllMoves();
         skipCheckVisible = true;
-        }
+    }
     else if( inASCII == 'o' ) {
         mZeroX = mCurX;
         mZeroY = mCurY;
-        }
+    }
     else if( inASCII == 'p' ) {
         skipCheckVisible = true;
         if( ! mPlayingTime ) {
             
             mPlayingTime = true;
-            }
+        }
         else {
             mPlayingTime = false;
             for( int y=0; y<mSceneH; y++ ) {
@@ -2760,27 +2703,27 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
                     SceneCell *c = &( mPersonCells[y][x] );
                     c->age = c->returnAge;
                     c->heldAge = c->returnHeldAge;
-                    }
                 }
             }
         }
+    }
     else if( inASCII == 'r' ) {
         skipCheckVisible = true;
         if( ! mRecordingFrames ) {
             startOutputAllFrames();
             mRecordingFrames = true;
-            }
+        }
         else {
             stopOutputAllFrames();
             mRecordingFrames = false;
-            }
         }
+    }
     else if( inASCII == 'f' ) {
         c->flipH = ! c->flipH;
-        }
+    }
     else if( inASCII == 'F' ) {
         p->flipH = ! p->flipH;
-        }
+    }
     else if( inASCII == 'A' ) {
         for( int y=mCurY; y< mCurY + copyAreaSize; y++ ) {
             for( int x=mCurX; x< mCurX + copyAreaSize; x++ ) {
@@ -2791,20 +2734,20 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
                     = mFloorCells[ y ][ x ];
                 copyPeopleArea[ y - mCurY ][ x - mCurX ] 
                     = mPersonCells[ y ][ x ];
-                }
             }
-        copyAreaSet = true;
         }
+        copyAreaSet = true;
+    }
     else if( inASCII == 'c' ) {
         // copy
         mCopyBuffer = *c;
         copyAreaSet = false;
-        }
+    }
     else if( inASCII == 'C' ) {
         // copy
         mCopyBuffer = *p;
         copyAreaSet = false;
-        }
+    }
     else if( inASCII == 'x' ) {
         // cut
         // delete all but biome
@@ -2813,13 +2756,13 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
         *c = mEmptyCell;
         c->biome = oldBiome;
         copyAreaSet = false;
-        }
+    }
     else if( inASCII == 'X' ) {
         // cut person
         mCopyBuffer = *p;
         *p = mEmptyCell;
         copyAreaSet = false;
-        }
+    }
     else if( inASCII == 'v' ) {
         // paste
         if( copyAreaSet ) {
@@ -2834,23 +2777,23 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
                         copyFloorArea[ y - mCurY ][ x - mCurX ];
                     mPersonCells[ y ][ x ] = 
                         copyPeopleArea[ y - mCurY ][ x - mCurX ];
-                    }
                 }
             }
+        }
         else if( mCopyBuffer.oID > 0 &&
             getObject( mCopyBuffer.oID )->person ) {
             *p = mCopyBuffer;
-            }
+        }
         else {
             *c = mCopyBuffer;
-            }
-        restartAllMoves();
         }
+        restartAllMoves();
+    }
     else if( inASCII == 'V' ) {
         if( mCopyBuffer.oID > 0 &&
             getObject( mCopyBuffer.oID )->person ) {
             // do nothing, don't paste people
-            }
+        }
         else {
             for( int dy=-4; dy<4; dy++ ) {
                 int y = mCurY + dy;
@@ -2859,12 +2802,12 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
                         int x = mCurX + dx;
                         if( x >= 0 && x < mSceneW ) {
                             mCells[ y ][ x ] = mCopyBuffer;
-                            }
                         }
                     }
                 }
             }
         }
+    }
     else if( inASCII == 'i' ) {
         // insert into container
         
@@ -2882,11 +2825,11 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
                 
                 sub.appendArray( pasteContained, mCopyBuffer.contained.size() );
                 delete [] pasteContained;
-                }
+            }
             
             c->subContained.push_back( sub );
-            }
         }
+    }
     else if( inASCII == 'I' ) {
         // insert as held
         
@@ -2904,26 +2847,27 @@ void EditorScenePage::keyDown( unsigned char inASCII ) {
                 p->returnHeldAge = p->heldAge;
                 p->heldEmotion = mCopyBuffer.currentEmot;
                 p->heldExtraEmotion = mCopyBuffer.extraEmot;
-                }
             }
         }
+    }
     else if( inASCII == 8 ) {
         // backspace
         clearCell( c );
         clearCell( p );
         clearCell( f );
-        }
+    }
     else if( inASCII == 'd' ) {
         mLittleDheld = true;
-        }
+    }
     else if( inASCII == 'D' ) {
         mBigDheld = true;
-        }
+    }
     
     if( !skipCheckVisible ) {
         checkVisible();
-        }
     }
+    // AppLog::info("mystd: end");
+}
 
 
 

@@ -27,6 +27,7 @@
 
 #include "spriteDrawColorOverride.h"
 
+#include "minorGems/util/log/AppLog.h"
 
 // supplied by animation bank
 extern void checkDrawPos( int inObjectID, doublePair inPos );
@@ -1388,6 +1389,19 @@ float initObjectBankStep() {
 
 
 
+                r->containOffsetX = 0;
+                r->containOffsetY = 0;
+                            
+                if( strstr( lines[next], "containOffset=" ) != NULL ) {
+                    sscanf( lines[next], "containOffset=%d,%d", 
+                            &( r->containOffsetX ),
+                            &( r->containOffsetY ) );
+                                
+                    next++;
+                    }
+
+
+
                 r->heldOffset.x = 0;
                 r->heldOffset.y = 0;
                             
@@ -1604,6 +1618,7 @@ float initObjectBankStep() {
                 r->spriteInvisibleWhenWorn = new int[ r->numSprites ];
                 r->spriteBehindSlots = new char[ r->numSprites ];
                 r->spriteInvisibleWhenContained = new char[ r->numSprites ];
+                r->spriteIgnoredWhenCalculatingCenterOffset = new char[ r->numSprites ];
 
 
                 r->spriteIsHead = new char[ r->numSprites ];
@@ -1727,6 +1742,7 @@ float initObjectBankStep() {
                     int invisRead = 0;
                     int invisWornRead = 0;
                     int behindSlotsRead = 0;
+                    int ignoredRead = 0;
                     
                     sscanf( lines[next], 
                             "invisHolding=%d,invisWorn=%d,behindSlots=%d", 
@@ -1748,6 +1764,17 @@ float initObjectBankStep() {
                         }
                     else {
                         r->spriteInvisibleWhenContained[i] = 0;
+                        }
+                    
+                    if( strstr( lines[next], "ignoredCont=" ) != NULL ) {
+                        ignoredRead = 0;
+                        sscanf( lines[next], "ignoredCont=%d", &ignoredRead );
+                        
+                        r->spriteIgnoredWhenCalculatingCenterOffset[i] = ignoredRead;
+                        next++;
+                        }
+                    else {
+                        r->spriteIgnoredWhenCalculatingCenterOffset[i] = 0;
                         }
                     }
                 
@@ -3045,6 +3072,7 @@ static void freeObjectRecord( int inID ) {
             delete [] idMap[inID]->spriteInvisibleWhenWorn;
             delete [] idMap[inID]->spriteBehindSlots;
             delete [] idMap[inID]->spriteInvisibleWhenContained;
+            delete [] idMap[inID]->spriteIgnoredWhenCalculatingCenterOffset;
 
             delete [] idMap[inID]->spriteIsHead;
             delete [] idMap[inID]->spriteIsBody;
@@ -3138,6 +3166,7 @@ void freeObjectBank() {
             delete [] idMap[i]->spriteInvisibleWhenWorn;
             delete [] idMap[i]->spriteBehindSlots;
             delete [] idMap[i]->spriteInvisibleWhenContained;
+            delete [] idMap[i]->spriteIgnoredWhenCalculatingCenterOffset;
 
             delete [] idMap[i]->spriteIsHead;
             delete [] idMap[i]->spriteIsBody;
@@ -3270,6 +3299,8 @@ int reAddObject( ObjectRecord *inObject,
                         inObject->foodValue,
                         inObject->bonusValue,
                         inObject->speedMult,
+                        inObject->containOffsetX,
+                        inObject->containOffsetY,
                         inObject->heldOffset,
                         inObject->clothing,
                         inObject->clothingOffset,
@@ -3303,6 +3334,7 @@ int reAddObject( ObjectRecord *inObject,
                         inObject->spriteInvisibleWhenWorn,
                         inObject->spriteBehindSlots,
                         inObject->spriteInvisibleWhenContained,
+                        inObject->spriteIgnoredWhenCalculatingCenterOffset,
                         inObject->spriteIsHead,
                         inObject->spriteIsBody,
                         inObject->spriteIsBackFoot,
@@ -3599,6 +3631,8 @@ int addObject( const char *inDescription,
                int inFoodValue,
                int inBonusValue,
                float inSpeedMult,
+               int inContainOffsetX,
+               int inContainOffsetY,
                doublePair inHeldOffset,
                char inClothing,
                doublePair inClothingOffset,
@@ -3629,6 +3663,7 @@ int addObject( const char *inDescription,
                int *inSpriteInvisibleWhenWorn,
                char *inSpriteBehindSlots,
                char *inSpriteInvisibleWhenContained,
+               char *inSpriteIgnoredWhenCalculatingCenterOffset,
                char *inSpriteIsHead,
                char *inSpriteIsBody,
                char *inSpriteIsBackFoot,
@@ -3807,6 +3842,10 @@ int addObject( const char *inDescription,
         
         lines.push_back( autoSprintf( "speedMult=%f", inSpeedMult ) );
 
+        if( inContainOffsetX != 0 || inContainOffsetY != 0 )
+        lines.push_back( autoSprintf( "containOffset=%d,%d",
+                                      inContainOffsetX, inContainOffsetY ) );
+
         lines.push_back( autoSprintf( "heldOffset=%f,%f",
                                       inHeldOffset.x, inHeldOffset.y ) );
 
@@ -3891,6 +3930,9 @@ int addObject( const char *inDescription,
 
             lines.push_back( autoSprintf( "invisCont=%d", 
                                           inSpriteInvisibleWhenContained[i] ) );
+
+            lines.push_back( autoSprintf( "ignoredCont=%d", 
+                                          inSpriteIgnoredWhenCalculatingCenterOffset[i] ) );
 
             }
         
@@ -4139,6 +4181,8 @@ int addObject( const char *inDescription,
 
     
     r->speedMult = inSpeedMult;
+    r->containOffsetX = inContainOffsetX;
+    r->containOffsetY = inContainOffsetY;
     r->heldOffset = inHeldOffset;
     r->clothing = inClothing;
     r->clothingOffset = inClothingOffset;
@@ -4183,6 +4227,7 @@ int addObject( const char *inDescription,
     r->spriteInvisibleWhenWorn = new int[ inNumSprites ];
     r->spriteBehindSlots = new char[ inNumSprites ];
     r->spriteInvisibleWhenContained = new char[ inNumSprites ];
+    r->spriteIgnoredWhenCalculatingCenterOffset = new char[ inNumSprites ];
 
     r->spriteIsHead = new char[ inNumSprites ];
     r->spriteIsBody = new char[ inNumSprites ];
@@ -4289,7 +4334,6 @@ int addObject( const char *inDescription,
     setupBlocksNonFollower( r );
     setupBadgePos( r );
     
-    
     r->toolSetIndex = -1;
     
     r->isBiomeLimited = false;
@@ -4330,6 +4374,9 @@ int addObject( const char *inDescription,
             inNumSprites * sizeof( char ) );
 
     memcpy( r->spriteInvisibleWhenContained, inSpriteInvisibleWhenContained, 
+            inNumSprites * sizeof( char ) );
+
+    memcpy( r->spriteIgnoredWhenCalculatingCenterOffset, inSpriteIgnoredWhenCalculatingCenterOffset, 
             inNumSprites * sizeof( char ) );
 
 
@@ -4921,17 +4968,8 @@ HoldingPos drawObject( ObjectRecord *inObject, doublePair inPos, double inRot,
         ObjectRecord *contained = getObject( inContainedIDs[i] );
         
 
-        doublePair centerOffset;
+        doublePair centerOffset = computeContainedCenterOffset( inObject, contained );
 
-        if( inObject->slotStyle == 0 ) {
-            centerOffset = getObjectCenterOffset( contained );
-            }
-        else if( inObject->slotStyle == 1 ) {
-            centerOffset = getObjectBottomCenterOffset( contained );
-            }
-        else if( inObject->slotStyle == 2 ) {
-            centerOffset = {0, 0};
-            }
 
         double rot = inRot;
         
@@ -5511,9 +5549,8 @@ int getMaxDiameter( ObjectRecord *inObject ) {
     
     for( int i=0; i<inObject->numSprites; i++ ) {
         doublePair pos = inObject->spritePos[i];
-                
-        int rad = getSpriteRecord( inObject->sprites[i] )->maxD / 2;
         
+        int rad = getSpriteRecord( inObject->sprites[i] )->maxD / 2; // 不知道为什么会有NULL的情况
         int xR = lrint( fabs( pos.x ) + rad );
         int yR = lrint( fabs( pos.y ) + rad );
         
@@ -6459,7 +6496,7 @@ doublePair getObjectCenterOffset( ObjectRecord *inObject ) {
             continue;
             }
             
-		if( inObject->spriteColor[i].r < 1.0 && inObject->spriteColor[i].r > 0.998 ) {
+		if( inObject->spriteIgnoredWhenCalculatingCenterOffset[i] ) {
 			// special flag to skip sprite when calculating position to draw object
 			continue;
 		}
@@ -6524,14 +6561,13 @@ doublePair getObjectBottomCenterOffset( ObjectRecord *inObject ) {
 
     // find center of lowessprite
 	
-	//2HOL drawing tweak: instead of finding sprite with lowest center
-	//we look for sprite with lowest bottom 
-	//this way we make sure that no sprite of an object is drawn 
-	//lower than the bottom edge of a slot
+    // 2HOL drawing tweak: instead of finding sprite with lowest center
+    // we look for sprite with lowest bottom 
+    // this way we make sure that no sprite of an object is drawn 
+    // lower than the bottom edge of a slot
 
     SpriteRecord *lowestRecord = NULL;
     
-    int lowestIndex = -1;
     double lowestYPos = 0;
     
     for( int i=0; i<inObject->numSprites; i++ ) {
@@ -6552,41 +6588,61 @@ doublePair getObjectBottomCenterOffset( ObjectRecord *inObject ) {
             continue;
             }
 			
-		if( inObject->spriteColor[i].r < 1.0 && inObject->spriteColor[i].r > 0.998 ) {
+		if( inObject->spriteIgnoredWhenCalculatingCenterOffset[i] ) {
 			// special flag to skip sprite when calculating position to draw object
 			continue;
 		}
-
-        int h = sprite->visibleH;
 		
-		doublePair dimensions = { sprite->visibleW, sprite->visibleH };
+        doublePair dimensions = { (double)sprite->visibleW, (double)sprite->visibleH };
 		
-		dimensions = rotate( dimensions, 
-							   2 * M_PI * inObject->spriteRot[i] );
-		
-		doublePair centerOffset = { (double)sprite->centerXOffset,
+        doublePair centerOffset = { (double)sprite->centerXOffset,
 									(double)sprite->centerYOffset };
                                     
-		doublePair centerAnchorOffset = { (double)sprite->centerAnchorXOffset,
+        doublePair centerAnchorOffset = { (double)sprite->centerAnchorXOffset,
                                           (double)sprite->centerAnchorYOffset };
-			
-		centerOffset = rotate( centerOffset, 
-							   2 * M_PI * inObject->spriteRot[i] );
+        
+        
+        double rot = inObject->spriteRot[i];
+        
+        if( rot != 0 ) {
+            double rotAbs = fabs( rot );
+            
+            // just the fractional part
+            rotAbs -= floor( rotAbs );
+            
+            // snap rotation to the nearest 45 degree
+            double roundRot = round( rotAbs / 0.125 ) * 0.125;
+            if( rot < 0 ) roundRot = -roundRot;
+            rot = roundRot;
+            
+            rotAbs = fabs( rot );
+            rotAbs -= floor( rotAbs );
+            
+            // there is no way to calculate the visible dimensions after rotation
+            // but in case the rotation is orthogonal, we can swap the height and width
+            if( rotAbs == 0.25 || rotAbs == 0.75 ) {
+                dimensions.x = sprite->visibleH;
+                dimensions.y = sprite->visibleW;
+                }
+                
+            }
+        
+        centerOffset = rotate( centerOffset, 2 * M_PI * rot );
                                
-		centerAnchorOffset = rotate( centerAnchorOffset, 
-							   2 * M_PI * inObject->spriteRot[i] );
-
-		doublePair spriteCenter = add( inObject->spritePos[i], 
-									   centerOffset );
-		
-		double y = spriteCenter.y - abs(dimensions.y) / 2 + centerAnchorOffset.y;
+        centerAnchorOffset = rotate( centerAnchorOffset, 2 * M_PI * rot );
+        
+        double y = inObject->spritePos[i].y
+                   + centerOffset.y
+                   + centerAnchorOffset.y
+                   // there is no way to calculate the visible dimensions after rotation
+                   // just use the pre-rotation height here for simplicity
+                   - dimensions.y / 2;
 
         if( lowestRecord == NULL ||
             // lowest point of sprite is lower than what we've seen so far
             y < lowestYPos ) {
 
             lowestRecord = sprite;
-            lowestIndex = i;
             lowestYPos = y;
             }
         }
@@ -6599,11 +6655,94 @@ doublePair getObjectBottomCenterOffset( ObjectRecord *inObject ) {
 
     doublePair wideCenter = getObjectCenterOffset( inObject );
 	
-	//Adjust y so that the lowest point of an object sits
-	//on the bottom edge of a slot
-	wideCenter.y = lowestYPos + 8.0; //slot has height of 16.0
+    // Adjust y so that the lowest point of an object sits
+    // on the bottom edge of a slot
+    // but keep x of the center of widest sprite
+    // (in case object has "feet" that are not centered)
+	
+    wideCenter.y = lowestYPos + 14.0; // slot has height of 28.0
+
 
     return wideCenter;    
+    }
+    
+    
+doublePair getObjectWidestSpriteCenterOffset( ObjectRecord *inObject ) {
+
+
+    // find centerXOffset and centerYOffset of widest sprite
+
+    SpriteRecord *widestRecord = NULL;
+    
+    int widestIndex = -1;
+    int widestWidth = 0;
+    double widestYPos = 0;
+    
+    for( int i=0; i<inObject->numSprites; i++ ) {
+        SpriteRecord *sprite = getSpriteRecord( inObject->sprites[i] );
+    
+        if( sprite->multiplicativeBlend ) {
+            // don't consider translucent sprites when computing wideness
+            continue;
+            }
+
+        if( inObject->spriteInvisibleWhenWorn[i] == 2 ) {
+            // don't consider parts visible only when worn
+            continue;
+            }
+            
+        if( inObject->spriteIgnoredWhenCalculatingCenterOffset[i] ) {
+            // special flag to skip sprite when calculating position to draw object
+            continue;
+        }
+        
+
+        int w = sprite->visibleW;
+        
+        double rot = inObject->spriteRot[i];
+        
+        if( rot != 0 ) {
+            double rotAbs = fabs( rot );
+            
+            // just the fractional part
+            rotAbs -= floor( rotAbs );
+            
+            if( rotAbs == 0.25 || rotAbs == 0.75 ) {
+                w = sprite->visibleH;
+                }
+            }
+
+
+        if( widestRecord == NULL ||
+            // wider than what we've seen so far
+            w > widestWidth ||
+            // or tied for wideness, and lower
+            ( w == widestWidth &&
+              inObject->spritePos[i].y < widestYPos ) ) {
+
+            widestRecord = sprite;
+            widestIndex = i;
+            widestWidth = w;
+            widestYPos = inObject->spritePos[i].y;
+            }
+        }
+    
+
+    if( widestRecord == NULL ) {
+        doublePair result = { 0, 0 };
+        return result;
+        }
+    
+    
+        
+    doublePair centerOffset = { (double)widestRecord->centerXOffset,
+                                (double)widestRecord->centerYOffset };
+        
+    centerOffset = rotate( centerOffset, 
+                           2 * M_PI * inObject->spriteRot[widestIndex] );
+
+    return centerOffset;
+    
     }
 
 
@@ -6848,6 +6987,37 @@ void computeHeldDrawPos( HoldingPos inHoldingPos, doublePair inPos,
 
     *outHeldDrawPos = holdPos;
     *outHeldDrawRot = holdRot;
+    }
+
+
+
+doublePair computeContainedCenterOffset( ObjectRecord *inContainerObject, 
+                                         ObjectRecord *inContainedObject ) {
+    
+    // find the object's center offset when it is contained
+    // taking into account the container's slot style
+    
+    doublePair centerOffset;
+
+    if( inContainerObject->slotStyle == 0 ) {
+        centerOffset = getObjectCenterOffset( inContainedObject );
+        }
+    else if( inContainerObject->slotStyle == 1 ) {
+        centerOffset = getObjectBottomCenterOffset( inContainedObject );
+        }
+    else if( inContainerObject->slotStyle == 2 ) {
+        centerOffset = {0, 0};
+        }
+    
+    // the containOffset is applied here
+    // instead of inside getObjectCenterOffset and getObjectBottomCenterOffset
+    // so the offsets won't interfere with heldPos
+    // (heldPos uses getObjectCenterOffset)
+    centerOffset.x += inContainedObject->containOffsetX;
+    centerOffset.y += inContainedObject->containOffsetY;
+        
+    return centerOffset;
+        
     }
 
 

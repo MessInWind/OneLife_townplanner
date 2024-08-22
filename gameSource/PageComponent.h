@@ -108,7 +108,7 @@ class PageComponent : public GUIComponent {
             };
         
         virtual void draw() {
-            };
+        };
 
         
         // these calls receive pointer coordinates relative to component center

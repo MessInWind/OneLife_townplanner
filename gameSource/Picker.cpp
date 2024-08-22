@@ -13,13 +13,14 @@
 
 #include "minorGems/game/game.h"
 
-
+#include "minorGems/util/log/AppLog.h"
 
 
 #define PER_PAGE 5
 
 extern Font *mainFont;
 extern Font *smallFont;
+extern Font *handwritingFont;
 
 
 Picker::Picker( Pickable *inPickable, double inX, double inY )
@@ -37,7 +38,7 @@ Picker::Picker( Pickable *inPickable, double inX, double inY )
           mSearchField( mainFont, 
                         0,  100, 4,
                         false,
-                        "", NULL, "" ),
+                        NULL, NULL, NULL ), // 中文支持
           mSelectionIndex( -1 ),
           mSelectionRightClicked( false ),
           mPastSearchCurrentIndex( -1 ) {
@@ -290,20 +291,20 @@ void Picker::redoSearch( char inClearPageSkip ) {
 
 void Picker::focusSearchField() {
     mSearchField.focus();
-    }
+}
     
 void Picker::clearSearchField() {
     mSearchField.setText( "" );
-    }
+}
     
 void Picker::setSearchField( const char *inText ) {
     mSearchField.setText( inText );
     redoSearch( true );
-    }
+}
     
 void Picker::usePickable( int id ) {
     mPickable->usePickable( id );
-    }
+}
 
 
 
@@ -317,15 +318,15 @@ void Picker::addSearchToStack() {
             mPastSearches.deallocateStringElement( i );        
             mPastSearchSkips.deleteElement( i );
             break;
-            }
         }
+    }
     
     
     mPastSearches.push_back( search );
     mPastSearchSkips.push_back( mSkip );
     
     mPastSearchCurrentIndex = mPastSearches.size() - 1;
-    }
+}
 
 
         
@@ -458,6 +459,9 @@ void Picker::specialKeyDown( int inKeyCode ) {
 
 
 void Picker::draw() {
+    
+
+
     setDrawColor( 0.75, 0.75, 0.75, 1 );
     
     doublePair bgPos = { 0, -85 };
@@ -465,21 +469,24 @@ void Picker::draw() {
     drawRect( bgPos, 80, 160 );
     
 
-
     if( mResults != NULL ) {
         doublePair pos = { -50, 40 };
         
         
         for( int i=0; i<mNumResults; i++ ) {
+            
+
             if( i == mSelectionIndex ) {
                 setDrawColor( 1, 1, 1, 1 );
                 doublePair selPos = pos;
                 selPos.x = 0;
                 drawRect( selPos, 80, 32 );
-                }
+            }
 
             setDrawColor( 1, 1, 1, 1 );
-            mPickable->draw( mResults[i], pos );
+            
+            
+            mPickable->draw( mResults[i], pos ); // ObjectRecord buug here
             
             doublePair textPos = pos;
             textPos.x += 52;
@@ -493,41 +500,39 @@ void Picker::draw() {
             int charsLeft = textLen;
             
             SimpleVector<char*> parts;
-            
             while( charsLeft > 0 ) {
-                char *part =
-                    autoSprintf( "%.9s", &( text[ textLen - charsLeft ] ) );
+                char *part = autoSprintf( "%.9s", &( text[ textLen - charsLeft ] ) );
                 charsLeft -= strlen( part );
                 
                 
                 parts.push_back( part );
-                }
+            }
             
             textPos.y += ( parts.size() - 1 ) * 12 / 2;
-            
             for( int j=0; j<parts.size(); j++ ) {
                 
                 char *text = parts.getElementDirect( j );
                 char *trimmed = trimWhitespace( text );
                 
-                smallFont->drawString( trimmed, 
-                                       textPos, alignLeft );
+                smallFont->drawString( trimmed, textPos, alignLeft ); // 绘制物品名
                 textPos.y -= 12;
 
                 delete [] trimmed;
                 delete [] text;
-                }
+            }
             
             if( mResultsUnclickable[ i ] ) {
                 setDrawColor( 0, 0, 0, 0.65 );
                 doublePair selPos = pos;
                 selPos.x = 0;
                 drawRect( selPos, 80, 32 );
-                }
+            }
 
             pos.y -= 64;
-            }
+
         }
+
+    }
     
 
     setDrawColor( 1, 1, 1, 1 );
@@ -536,9 +541,10 @@ void Picker::draw() {
     
     if( mPickable->isSearchable() ) {    
         smallFont->drawString( "Type . for recent", pos, alignCenter );
-        }
-    
     }
+
+    
+}
 
 
 
@@ -710,5 +716,10 @@ void Picker::addFilter( char(*inUnclickableFunc)( int inID ) ) {
     FilterFunction f = { inUnclickableFunc };
                          
     mFilterFuncions.push_back( f );
+    }
+
+
+void Picker::removeFilters() {
+    mFilterFuncions.deleteAll();
     }
 

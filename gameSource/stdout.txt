@@ -1,0 +1,22 @@
+shcore.dll loaded successfully
+Found SetProcessDpiAwareness function in shcore.dll
+age scale 3.000000 3.000000
+age scale 5.000000 5.000000
+age scale 14.000000 14.000000
+age scale 20.000000 20.000000
+age scale 104.000000 40.000000
+age scale 117.000000 57.000000
+age scale 120.000000 60.000000
+L4 | Sun Mar 24 15:07:35 2024 (194 ms) | general | OneLife client v364 (binV=364, dataV=0) starting up
+Loaded 0 animations from animations folder
+Finished loading animation bank in 0.001000 sec
+Loaded 0 objects from objects folder
+  Auto-generated 0 'used' objects
+  Auto-generated 0 'variable' objects
+Finished loading object bank in -0.000000 sec
+Loaded 0 categories from categories folder
+Finished loading category bank in 0.001000 sec
+Loaded 0 transitions from transitions folder
+Auto-generated 0 transitions based on categories
+Auto-generated 0 transitions based on pattern categories
+Run 0:  Auto-modified 0 transitions based generic use transitions and auto-added 0 last use generic transitions (0 objects had generic use tra

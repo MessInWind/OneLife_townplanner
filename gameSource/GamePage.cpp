@@ -9,6 +9,8 @@
 #include "minorGems/util/stringUtils.h"
 #include "minorGems/game/game.h"
 
+#include "minorGems/util/log/AppLog.h"
+
 
 
 int GamePage::sPageCount = 0;
@@ -116,22 +118,22 @@ void GamePage::setStatusDirect( const char *inStatusMessage, char inError ) {
     if( mStatusMessage != NULL ) {
         delete [] mStatusMessage;
         mStatusMessage = NULL;
-        }
+    }
     
     if( inStatusMessage != NULL ) {
         mStatusMessage = stringDuplicate( inStatusMessage );
         
         mStatusMessageKey = NULL;
-        }
+    }
     
     mStatusError = inError;
-    }
+}
 
 
 
 char GamePage::isStatusShowing() {
     return ( mStatusMessage != NULL || mStatusMessageKey != NULL );
-    }
+}
 
 
 
@@ -189,8 +191,8 @@ void GamePage::setStatusPositiion( char inTop ) {
 
 
 
-void GamePage::base_draw( doublePair inViewCenter, 
-                          double inViewSize ){
+void GamePage::base_draw( doublePair inViewCenter, double inViewSize ){
+
 
     if( sShutdownPendingWarning ) {
         // skip drawing current page and draw warning instead
@@ -200,37 +202,37 @@ void GamePage::base_draw( doublePair inViewCenter,
         drawMessage( "shutdownPendingWarning", labelPos );
         
         return;
-        }
+    }
 
     
-    drawUnderComponents( inViewCenter, inViewSize );
-
+    drawUnderComponents( inViewCenter, inViewSize ); // 绘制子组件 ?
+    // AppLog::info("mystd: begin");
     if( !mSkipDrawingSubComponents ) {
-        PageComponent::base_draw( inViewCenter, inViewSize );
-        }
-    
+        PageComponent::base_draw( inViewCenter, inViewSize ); // bug here
+    }
+    // AppLog::info("mystd: end");
+
     char statusDrawn = false;
     
     if( mStatusMessageKey != NULL ) {
         doublePair labelPos = { 0, -280 };
-        
+
         if( mStatusAtTopOfScreen ) {
             labelPos.y *= -1;
-            }
-        
+        }
+    
         drawMessage( mStatusMessageKey, labelPos, mStatusError );
         statusDrawn = true;
-        }
+    }
     else if( mStatusMessage != NULL ) {
         doublePair labelPos = { 0, -280 };
         
         if( mStatusAtTopOfScreen ) {
             labelPos.y *= -1;
-            }
-        
+        }
         drawMessage( mStatusMessage, labelPos, mStatusError );
         statusDrawn = true;
-        }
+    }
 
 
     // skip drawing tip if status showing
@@ -240,17 +242,16 @@ void GamePage::base_draw( doublePair inViewCenter,
         
         if( mTipAtTopOfScreen ) {
             tipPosition.y *= -1;
-            }
+        }
         
         
         if( mTip != NULL ) {
             drawMessage( mTip, tipPosition );
-            }
+        }
         else if( mLastTip != NULL && mLastTipFade > 0 ) {
             drawMessage( mLastTip, tipPosition, false, mLastTipFade );
-            }
         }
-    
+    }
     
     if( sWaitingFade > 0 ) {
         
@@ -272,15 +273,15 @@ void GamePage::base_draw( doublePair inViewCenter,
                     if( ! noWarningColor() ) {    
                         g = 0.4666;
                         b = 0;
-                        }
+                    }
                     break;
                 default:
                     g = 0;
                     b = 0;
                     showWarningIcon = true;
                     break;
-                }
             }
+        }
         
 
         setDrawColor( r, g, b, 
@@ -296,7 +297,7 @@ void GamePage::base_draw( doublePair inViewCenter,
             
             drawSprite( sWaitingSprites[sLastWaitingSprite], 
                         spritePos );
-            }
+        }
 
 
         if( showWarningIcon && ! makeWaitingIconSmall() ) {
@@ -307,18 +308,19 @@ void GamePage::base_draw( doublePair inViewCenter,
             drawSprite( sResponseWarningSprite, spritePos );
             sResponseWarningShowing = true;
             sResponseWarningPosition = spritePos;
-            }
+        }
         else if( showWarningIcon ) {
             // should show warning, but not enough room (small icon)
             
             // still show tool tip centered on small icon
             sResponseWarningShowing = true;
             sResponseWarningPosition = spritePos;
-            }
         }
-    
-    draw( inViewCenter, inViewSize );
     }
+   
+    draw( inViewCenter, inViewSize );
+
+}
 
 
 extern double frameRateFactor;
@@ -465,7 +467,7 @@ void GamePage::base_makeActive( char inFresh ){
             PageComponent *c = *( mComponents.getElement( i ) );
             
             c->base_clearState();
-            }
+        }
 
         // don't show lingering tool tips from last time page was shown
         mLastTipFade = 0;
@@ -475,11 +477,11 @@ void GamePage::base_makeActive( char inFresh ){
             }
 
         clearSignal();
-        }
+    }
     
 
     makeActive( inFresh );
-    }
+}
 
 
 

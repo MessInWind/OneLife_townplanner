@@ -1,6 +1,7 @@
 #include "PageComponent.h"
 
 #include "minorGems/game/game.h"
+#include "minorGems/util/log/AppLog.h"
 
 
 PageComponent::PageComponent( double inX, double inY )
@@ -56,26 +57,24 @@ void PageComponent::base_step(){
 
 
 
-void PageComponent::base_draw( doublePair inViewCenter, 
-                               double inViewSize ){
+void PageComponent::base_draw( doublePair inViewCenter, double inViewSize ){
 
     doublePair oldViewCenter = getViewCenterPosition();
 
-    setViewCenterPosition( oldViewCenter.x - mX, 
-                           oldViewCenter.y - mY );
+    setViewCenterPosition( oldViewCenter.x - mX, oldViewCenter.y - mY );
     
     for( int i=0; i<mComponents.size(); i++ ) {
         PageComponent *c = *( mComponents.getElement( i ) );
     
         if( c->isVisible() ) {
             c->base_draw( inViewCenter, inViewSize );
-            }
         }
+    }
 
     draw();
 
     setViewCenterPosition( oldViewCenter.x, oldViewCenter.y );
-    }
+}
 
 
 

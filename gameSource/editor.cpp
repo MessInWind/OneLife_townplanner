@@ -895,7 +895,8 @@ void deleteCharFromUserTypedMessage() {
 
 
 
-void drawFrame( char inUpdate ) {    
+void drawFrame( char inUpdate ) {
+
 
     // test code for async file loading
     if( loadingFileHandle != -1 ) {
@@ -922,7 +923,7 @@ void drawFrame( char inUpdate ) {
     
     
 
-    if( !inUpdate ) {
+    if( !inUpdate ) { // 暂停情况 
 
         if( isQuittingBlocked() ) {
             // unsafe NOT to keep updating here, because pending network
@@ -936,17 +937,17 @@ void drawFrame( char inUpdate ) {
             }
 
         drawFrameNoUpdate( false );
-            
+        
         drawPauseScreen();
         
         if( !wasPaused ) {
             if( currentGamePage != NULL ) {
                 currentGamePage->base_makeNotActive();
-                }
+            }
 
             // fade out music during pause
             //setMusicLoudness( 0 );
-            }
+        }
         wasPaused = true;
 
         // handle delete key repeat
@@ -992,7 +993,7 @@ void drawFrame( char inUpdate ) {
 
 
     // fade pause screen out
-    if( pauseScreenFade > 0 ) {
+    if( pauseScreenFade > 0 ) { // 暂停界面淡出
         pauseScreenFade -= ( 1.0 / 30 ) * frameRateFactor;
         
         if( pauseScreenFade < 0 ) {
@@ -1055,14 +1056,14 @@ void drawFrame( char inUpdate ) {
     if( wasPaused ) {
         if( currentGamePage != NULL ) {
             currentGamePage->base_makeActive( false );
-            }
+        }
 
         // fade music in
         //if( ! musicOff ) {
         //    setMusicLoudness( 1.0 );
         //    }
         wasPaused = false;
-        }
+    }
 
 
 
@@ -1071,6 +1072,8 @@ void drawFrame( char inUpdate ) {
     stepSpriteBank();
     
     stepSoundBank();
+
+
 
     if( currentGamePage != NULL ) {
         currentGamePage->base_step();
@@ -1428,47 +1431,32 @@ void drawFrame( char inUpdate ) {
             if( scenePage->checkSignal( "animEditor" ) ) {
                 currentGamePage = animPage;
                 currentGamePage->base_makeActive( true );
-                }
             }
         }
+    }
     
     
+    // AppLog::info("mystd: begin");
 
     // now draw stuff AFTER all updates
     drawFrameNoUpdate( true );
 
-    /*
-    double recentFPS = getRecentFrameRate();
-
-    if( recentFPS < 0.90 * ( 60.0 / frameRateFactor ) 
-        ||
-        recentFPS > 1.10 * ( 60.0 / frameRateFactor ) ) {
-        
-        // slowdown or speedup of more than 10% off target
-
-        printf( "Seeing true framerate of %f\n", recentFPS );
-
-        // if we're seeing a speedup, this might be correcting
-        // for a previous slowdown that we already adjusted for
-        frameRateFactor = 60.0 / recentFPS;
-
-        printf( "Adjusting framerate factor to %f\n", frameRateFactor );
-        }
-    */
+    // AppLog::info("mystd: end");
 
     // draw tail end of pause screen, if it is still visible
     if( pauseScreenFade > 0 ) {
         drawPauseScreen();
-        }
     }
+
+}
 
 
 
 void drawFrameNoUpdate( char inUpdate ) {
     if( currentGamePage != NULL ) {
         currentGamePage->base_draw( lastScreenViewCenter, viewWidth );
-        }
     }
+}
 
 
 
