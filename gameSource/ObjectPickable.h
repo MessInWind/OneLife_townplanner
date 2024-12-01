@@ -72,7 +72,6 @@ class ObjectPickable : public Pickable {
             // AppLog::info( "mystd: begin" );
             // AppLog::infoF( "mystd: Drawing object %d, %s", r->id, r->description );
             int maxD = getMaxDiameter( r );
-            // AppLog::info( "mystd: end" );
             
             double zoom = 1;
 
@@ -89,7 +88,8 @@ class ObjectPickable : public Pickable {
 
             drawObject( r, 2, inPos, 0, false, false, 20, 0, false, false,
                         getEmptyClothingSet(), zoom );
-            }
+            // AppLog::info( "mystd: end" );
+        }
 
 
 

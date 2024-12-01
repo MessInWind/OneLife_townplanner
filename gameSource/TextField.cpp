@@ -30,7 +30,8 @@ TextField::TextField( Font *inDisplayFont,
                       char inForceCaps,
                       const char *inLabelText,
                       const char *inAllowedChars,
-                      const char *inForbiddenChars )
+                      const char *inForbiddenChars,
+                      char inUsePasteShortcut )
         : PageComponent( inX, inY ),
           mActive( true ), 
           mContentsHidden( false ),
@@ -57,7 +58,7 @@ TextField::TextField( Font *inDisplayFont,
           mSelectionEnd( -1 ),
           mShiftPlusArrowsCanSelect( false ),
           mCursorFlashSteps( 0 ),
-          mUsePasteShortcut( false ) {
+          mUsePasteShortcut( inUsePasteShortcut ) {
     
     if( inLabelText != NULL ) {
         mLabelText = stringDuplicate( inLabelText );
@@ -834,22 +835,23 @@ void TextField::keyDown( unsigned char inASCII ) {
             
             // paste!
             if( isClipboardSupported() ) {
-                char *clipboardText = getClipboardText();
+                // char *clipboardText = getClipboardText();
         
-                int len = strlen( clipboardText );
+                // int len = strlen( clipboardText );
                 
-                for( int i=0; i<len; i++ ) {
+                // for( int i=0; i<len; i++ ) {
                     
-                    unsigned char processedChar = 
-                        processCharacter( clipboardText[i] );    
+                //     unsigned char processedChar = 
+                //         processCharacter( clipboardText[i] );    
 
-                    if( processedChar != 0 ) {
+                //     if( processedChar != 0 ) {
                         
-                        insertCharacter( processedChar );
-                    }
-                }
-                delete [] clipboardText;
-                
+                //         insertCharacter( processedChar );
+                //     }
+                // }
+                // delete [] clipboardText;
+
+                insertString( getClipboardText() ); // 之间从剪贴板粘贴
                 mHoldDeleteSteps = -1;
                 mFirstDeleteRepeatDone = false;
                 
@@ -904,7 +906,7 @@ void TextField::keyDown( unsigned char inASCII ) {
             fireActionPerformed( this );
         }
     }
-    else if( inASCII >= 32 ) {
+    else if( inASCII >= 32 && inASCII < 128 ) { // 避免中文被处理
 
         unsigned char processedChar = processCharacter( inASCII );    
 
@@ -921,7 +923,7 @@ void TextField::keyDown( unsigned char inASCII ) {
         if( mFireOnAnyChange ) {
             fireActionPerformed( this );
         }
-    }    
+    }
 }
 
 
@@ -929,11 +931,52 @@ void TextField::keyDown( unsigned char inASCII ) {
 void TextField::keyUp( unsigned char inASCII ) {
     if( inASCII == 127 || inASCII == 8 ) {
         // end delete hold down
-        mHoldDeleteSteps = -1;
+
+        mHoldDeleteSteps = -1; // 直接尝试keyUp的内容 安卓虚拟键盘无法检测到keyUp 修复删除的bug
         mFirstDeleteRepeatDone = false;
     }
 }
 
+
+// 辅助函数：计算UTF-8字符的起始位置
+// int findUTF8CharStart(const char* text, int pos) {
+//     while (pos > 0 && (text[pos] & 0xC0) == 0x80) {
+//         pos--;
+//     }
+//     return pos;
+// }
+/*
+void TextField::deleteHit() { // 支持中文单独删除
+    if (mCursorPosition > 0 || isAnythingSelected()) {
+        mCursorFlashSteps = 0;
+
+        // 找到正确的删除位置（考虑UTF-8编码）
+        int newCursorPos = findUTF8CharStart(mText, mCursorPosition - 1);
+
+        // 清除选择区域
+        mSelectionStart = -1;
+        mSelectionEnd = -1;
+
+        char* oldText = mText;
+
+        char* preCursor = stringDuplicate(mText);
+        preCursor[newCursorPos] = '\0'; // 在新的光标位置截断字符串
+        char* postCursor = &(mText[mCursorPosition]);
+
+        mText = autoSprintf("%s%s", preCursor, postCursor);
+        mTextLen = strlen(mText);
+
+        delete[] preCursor;
+
+        delete[] oldText;
+
+        mCursorPosition = newCursorPos;
+
+        if (mFireOnAnyChange) {
+            fireActionPerformed(this);
+        }
+    }
+}*/
 
 
 void TextField::deleteHit() {

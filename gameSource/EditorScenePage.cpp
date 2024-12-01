@@ -608,21 +608,20 @@ void EditorScenePage::actionPerformed( GUIComponent *inTarget ) {
         int jump = 1;
         if( isCommandKeyDown() ) {
             jump *= 5;
-            }
+        }
         if( isShiftKeyDown() ) {
             jump *= 5;
-            }
+        }
         
         if( mSceneID < 0 ) {
             mSceneID = mNextSceneNumber;
-            }
+        }
         mSceneID -= jump;
-        
         // Try to load the scene while we're still in bounds.
-        while( ! tryLoadScene( mSceneID ) && mSceneID > 0 ) {
+        while( ! tryLoadScene( mSceneID ) && mSceneID > 0 ) { // bug1
             mSceneID--;
-            }
-            
+        }
+
         if( mSceneID < 0 ) mSceneID = 0;
             
         mReplaceButton.setVisible( true );
@@ -630,7 +629,7 @@ void EditorScenePage::actionPerformed( GUIComponent *inTarget ) {
         checkNextPrevVisible();
         checkVisible();
         restartAllMoves();
-        }
+    }
     else if( inTarget == &mClearSceneButton ) {
         clearScene();
 		mSceneID = -1;
@@ -3443,8 +3442,7 @@ File *EditorScenePage::getSceneFile( int inSceneID ) {
 
 
 
-void addClothingSetLines( SimpleVector<char*> *inLines,
-                          ClothingSet inSet ) {
+void addClothingSetLines( SimpleVector<char*> *inLines, ClothingSet inSet ) {
     inLines->push_back( 
         autoSprintf( "hat=%d",
                      inSet.hat == NULL 
@@ -3483,18 +3481,16 @@ void addClothingSetLines( SimpleVector<char*> *inLines,
 
 
 
-void addCellLines( SimpleVector<char*> *inLines, 
-                   SceneCell *inCell, char isPersonCell ) {
-    
+void addCellLines( SimpleVector<char*> *inLines, SceneCell *inCell, char isPersonCell ) {
     
     if( !isPersonCell ) {    
         inLines->push_back( autoSprintf( "biome=%d", inCell->biome ) );
-        }
+    }
     
     if( inCell->oID == -1 ) {
         inLines->push_back( stringDuplicate( "empty" ) );
         return;
-        }
+    }
     
 
     inLines->push_back( autoSprintf( "oID=%d", inCell->oID ) );
@@ -3505,21 +3501,16 @@ void addCellLines( SimpleVector<char*> *inLines,
     inLines->push_back( autoSprintf( "numCont=%d", numCont ) );
     
     for( int i=0; i<numCont; i++ ) {
-        inLines->push_back( 
-            autoSprintf( "cont=%d", 
-                         inCell->contained.getElementDirect( i ) ) );
+        inLines->push_back( autoSprintf( "cont=%d", inCell->contained.getElementDirect( i ) ) );
         
         int numSub = inCell->subContained.getElementDirect(i).size();
         
         inLines->push_back( autoSprintf( "numSubCont=%d", numSub ) );
         
         for( int s=0; s<numSub; s++ ) {
-            inLines->push_back( 
-                autoSprintf( "subCont=%d", 
-                             inCell->subContained.getElementDirect( i ).
-                             getElementDirect( s ) ) );
-            }
+            inLines->push_back( autoSprintf( "subCont=%d", inCell->subContained.getElementDirect( i ). getElementDirect( s ) ) );
         }
+    }
     
     
     addClothingSetLines( inLines, inCell->clothing );
@@ -3535,24 +3526,19 @@ void addCellLines( SimpleVector<char*> *inLines,
 
     inLines->push_back( autoSprintf( "anim=%d", (int)( inCell->anim ) ) );
     
-    inLines->push_back( autoSprintf( "frozenAnimTime=%f", 
-                                     inCell->frozenAnimTime ) );
+    inLines->push_back( autoSprintf( "frozenAnimTime=%f", inCell->frozenAnimTime ) );
     
-    inLines->push_back( autoSprintf( "numUsesRemaining=%d", 
-                                     inCell->numUsesRemaining ) );
+    inLines->push_back( autoSprintf( "numUsesRemaining=%d", inCell->numUsesRemaining ) );
     
     inLines->push_back( autoSprintf( "xOffset=%d", inCell->xOffset ) );
     inLines->push_back( autoSprintf( "yOffset=%d", inCell->yOffset ) );
 
-    inLines->push_back( autoSprintf( "destCellXOffset=%d", 
-                                     inCell->destCellXOffset ) );
+    inLines->push_back( autoSprintf( "destCellXOffset=%d", inCell->destCellXOffset ) );
     
-    inLines->push_back( autoSprintf( "destCellYOffset=%d", 
-                                     inCell->destCellYOffset ) );
+    inLines->push_back( autoSprintf( "destCellYOffset=%d", inCell->destCellYOffset ) );
     
-    inLines->push_back( autoSprintf( "moveDelayTime=%f", 
-                                     inCell->moveDelayTime ) );
-    }
+    inLines->push_back( autoSprintf( "moveDelayTime=%f", inCell->moveDelayTime ) );
+}
 
 
 
@@ -3573,20 +3559,17 @@ void EditorScenePage::writeSceneToFile( int inIDToUse ) {
             SceneCell *f = &( mFloorCells[y][x] );
             
 
-            if( c->biome == -1 &&
-                c->oID == -1 &&
-                p->oID == -1 &&
-                f->oID == -1 ) {
+            if( c->biome == -1 && c->oID == -1 && p->oID == -1 && f->oID == -1 ) {
                 // don't represent blank cells at all
-                }
+            }
             else {
                 lines.push_back( autoSprintf( "x=%d,y=%d", x, y ) );
                 addCellLines( &lines, c, false );
                 addCellLines( &lines, p, true );
                 addCellLines( &lines, f, true );
-                }
             }
         }
+    }
         
     lines.push_back( "" );
     
@@ -3605,14 +3588,14 @@ void EditorScenePage::writeSceneToFile( int inIDToUse ) {
         mNextSceneNumber++; // Just in case we've deleted it. It might change the ID when it's created.
         mNextFile->writeToFile( mNextSceneNumber );
 
-	char *fileName = f->getFileName(); // Make sure we have the same file we just created loaded.
-	mSceneID = getSceneFileID( fileName );
-	delete [] fileName;
+        char *fileName = f->getFileName(); // Make sure we have the same file we just created loaded.
+        mSceneID = getSceneFileID( fileName );
+        delete [] fileName;
     }
     delete [] contents;
 
     delete f;
-    }
+}
 
 
 
@@ -3665,32 +3648,34 @@ int scanCell( char **inLines, int inNextLine, SceneCell *inCell ) {
 
     int numRead = sscanf( lines[next], "biome=%d", &( inCell->biome ) );
     
-    if( numRead == 1 ) {
+    if( numRead == 1 ) { // cell personCell floorCell person,floor没有生物群系
         // person cells don't have biome listed
         next++;
-        }
+    }
     
-    if( strcmp( lines[next], "empty" ) == 0 ) {
+    if( strcmp( lines[next], "empty" ) == 0 ) { // 当前单元格为空 返回
         next++;
         return next;
-        }
+    }
     
 
-    sscanf( lines[next], "oID=%d", &( inCell->oID ) );
+    sscanf( lines[next], "oID=%d", &( inCell->oID ) ); // 物品id
+    // AppLog::infoF("%d", inCell->oID); // 527
+    // AppLog::infoF("mystd: %d", next);
     next++;
 
-    sscanf( lines[next], "heldID=%d", &( inCell->heldID ) );
+    sscanf( lines[next], "heldID=%d", &( inCell->heldID ) ); // 手持id
     next++;
 
     int numCont = 0;
     
-    sscanf( lines[next], "numCont=%d", &numCont );
+    sscanf( lines[next], "numCont=%d", &numCont ); // 容纳物品数量
     next++;
     
-    for( int i=0; i<numCont; i++ ) {
+    for( int i=0; i<numCont; i++ ) { // 遍历容纳的物品
         int cont;
         
-        sscanf( lines[next], "cont=%d", &cont );
+        sscanf( lines[next], "cont=%d", &cont ); // 容纳物品的id
         next++;
             
         inCell->contained.push_back( cont );
@@ -3699,86 +3684,83 @@ int scanCell( char **inLines, int inNextLine, SceneCell *inCell ) {
         
         SimpleVector<int> subVec;
         
-        sscanf( lines[next], "numSubCont=%d", &numSub );
+        sscanf( lines[next], "numSubCont=%d", &numSub ); // 如果是子容器，容纳物品数量
         next++;
     
-        for( int s=0; s<numSub; s++ ) {
+        for( int s=0; s<numSub; s++ ) { // 遍历子容器物品
             int subCont;
-            sscanf( lines[next], "subCont=%d", &subCont );
+            sscanf( lines[next], "subCont=%d", &subCont ); // 子容器物品id
             next++;
             
             subVec.push_back( subCont );
-            }
-        inCell->subContained.push_back( subVec );
         }
+        inCell->subContained.push_back( subVec );
+    }
     
-    
-    next = scanClothingSet( inLines, next, &( inCell->clothing ) );
-                            
-                            
-                         
+    next = scanClothingSet( inLines, next, &( inCell->clothing ) ); // 扫描衣服
+
     int flip;
-    sscanf( inLines[next], "flipH=%d", &flip );
+    sscanf( inLines[next], "flipH=%d", &flip ); // 是否水平翻转
     next++;
 
     inCell->flipH = (char)flip;
 
-    sscanf( inLines[next], "age=%lf", &( inCell->age ) );
+    sscanf( inLines[next], "age=%lf", &( inCell->age ) ); // 年龄
     inCell->returnAge = inCell->age;
     next++;
 
-    sscanf( inLines[next], "heldAge=%lf", &( inCell->heldAge ) );
+    sscanf( inLines[next], "heldAge=%lf", &( inCell->heldAge ) ); // 手持年龄？
     inCell->returnHeldAge = inCell->heldAge;
     next++;
     
     
-    next = scanClothingSet( inLines, next, &( inCell->heldClothing ) );
+    next = scanClothingSet( inLines, next, &( inCell->heldClothing ) ); // 扫描手持衣服？
 
 
     int anim;
-    sscanf( inLines[next], "anim=%d", &anim );
+    sscanf( inLines[next], "anim=%d", &anim ); // 动画？
     inCell->anim = (AnimType)anim;
     next++;
 
     
-    sscanf( inLines[next], "frozenAnimTime=%lf", &( inCell->frozenAnimTime ) );
+    sscanf( inLines[next], "frozenAnimTime=%lf", &( inCell->frozenAnimTime ) ); // 冻结动画时间？
     next++;
 
     
-    sscanf( inLines[next], "numUsesRemaining=%d",
-            &( inCell->numUsesRemaining ) );
+    sscanf( inLines[next], "numUsesRemaining=%d", &( inCell->numUsesRemaining ) ); // 剩余使用次数... 有些东西是0，有些是1
     next++;
 
     
-    sscanf( inLines[next], "xOffset=%d", &( inCell->xOffset ) );
+    sscanf( inLines[next], "xOffset=%d", &( inCell->xOffset ) ); // x偏移?
     next++;
 
-    sscanf( inLines[next], "yOffset=%d", &( inCell->yOffset ) );
+    sscanf( inLines[next], "yOffset=%d", &( inCell->yOffset ) ); // y偏移?
     next++;
 
 
-    sscanf( inLines[next], "destCellXOffset=%d", &( inCell->destCellXOffset ) );
+    sscanf( inLines[next], "destCellXOffset=%d", &( inCell->destCellXOffset ) ); // 目标x偏移?
     next++;
 
     
-    sscanf( inLines[next], "destCellYOffset=%d", &( inCell->destCellYOffset ) );
+    sscanf( inLines[next], "destCellYOffset=%d", &( inCell->destCellYOffset ) ); // 目标y偏移?
     next++;
 
-    sscanf( inLines[next], "moveDelayTime=%lf", &( inCell->moveDelayTime ) );
+    sscanf( inLines[next], "moveDelayTime=%lf", &( inCell->moveDelayTime ) ); // 移动延迟时间？
     next++;
 
 
     return next;
-    }
+}
 
 
 
 
 char EditorScenePage::tryLoadScene( int inSceneID ) {
+    // AppLog::infoF("mystd: tryLoadScene: %d", inSceneID);
     mPlayingTime = false;
     
     File *f = getSceneFile( inSceneID );
-    
+    // AppLog::infoF("mystd: tryLoadScene: %s", f->getFileName());
     char r = false;
     if( f == NULL ) {
         clearScene();
@@ -3787,11 +3769,9 @@ char EditorScenePage::tryLoadScene( int inSceneID ) {
     
     if( f->exists() && ! f->isDirectory() ) {
         
-        printf( "Trying to load scene %d\n", inSceneID );
-        
         char *fileText = f->readFileContents();
         
-        if( fileText != NULL ) {
+        if( fileText != NULL ) { // 读到文本
 			
 			while ( queueSize > 0 ) {
 				queuesPopBack();
@@ -3801,14 +3781,13 @@ char EditorScenePage::tryLoadScene( int inSceneID ) {
             int numLines = 0;
             
             char **lines = split( fileText, "\n", &numLines );
+            // AppLog::infoF("mystd: numLines: %d", numLines);
             delete [] fileText;
             clearScene(); // If we fail to load a scene, we're still on a new ID, so clear it.
 
-            if( numLines > 1 ) { // One line files obviously aren't real.
+            if( numLines > 1 ) { // 文本处理
 
                 int next = 0;
-
-
                 int w = mSceneW;
                 int h = mSceneH;
 
@@ -3842,6 +3821,8 @@ char EditorScenePage::tryLoadScene( int inSceneID ) {
                 }
                 clearScene();
 
+                // AppLog::info("mystd: a");
+
                 int numRead = 0;
                 int x, y;
                 if (next < numLines) {
@@ -3849,7 +3830,7 @@ char EditorScenePage::tryLoadScene( int inSceneID ) {
                     next++;
                 }
 
-                while( numRead == 2 ) {
+                while( numRead == 2 ) { // 存在下一格
                     SceneCell *c = &( mCells[y][x] );
                     SceneCell *p = &( mPersonCells[y][x] );
                     SceneCell *f = &( mFloorCells[y][x] );
@@ -3857,21 +3838,23 @@ char EditorScenePage::tryLoadScene( int inSceneID ) {
                     next = scanCell( lines, next, c ); // TODO: Keep scanCell from segfaulting when the file was interrupted midstream.
                     next = scanCell( lines, next, p );
 
-                    if( floorPresent ) {
+                    if( floorPresent ) { // 存在地板
                         next = scanCell( lines, next, f );
-                        }
+                    }
 
                     numRead = 0;
 
-                    if( next < numLines ) {
+                    if( next < numLines ) { // 继续读下一格
                         numRead = sscanf( lines[next], "x=%d,y=%d", &x, &y );
                         next++;
                     }
                 }
+
+                // AppLog::info("mystd: b");
                 
 	        }
             
-            for( int i=0; i<numLines; i++ ) {
+            for( int i=0; i<numLines; i++ ) { // 回收文本
                 delete [] lines[i];
             }
             delete [] lines;
@@ -3885,10 +3868,10 @@ char EditorScenePage::tryLoadScene( int inSceneID ) {
 			spriteCount = round( std::max(mSceneH, mSceneW) / 200 * 25 );
 				
         }
-    }    
+    }
     
     delete f;
-    
+    // AppLog::info("mystd: end");
     return r;
 }
 

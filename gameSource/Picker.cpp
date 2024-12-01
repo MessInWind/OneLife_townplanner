@@ -15,6 +15,8 @@
 
 #include "minorGems/util/log/AppLog.h"
 
+#include "utf8.h"
+
 
 #define PER_PAGE 5
 
@@ -36,9 +38,9 @@ Picker::Picker( Pickable *inPickable, double inX, double inY )
           mDelButton( smallFont, 15, -290, "x" ), 
           mDelConfirmButton( smallFont, -15, -290, "!" ), 
           mSearchField( mainFont, 
-                        0,  100, 4,
+                        0,  100, 8, // x, y, width 搜索框宽度
                         false,
-                        NULL, NULL, NULL ), // 中文支持
+                        NULL, NULL, NULL, true), // 中文支持 支持粘贴
           mSelectionIndex( -1 ),
           mSelectionRightClicked( false ),
           mPastSearchCurrentIndex( -1 ) {
@@ -62,6 +64,7 @@ Picker::Picker( Pickable *inPickable, double inX, double inY )
     mDelConfirmButton.setVisible( false );
 
     mSearchField.setFireOnAnyTextChange( true );
+
 
     redoSearch( false );
 
@@ -461,7 +464,6 @@ void Picker::specialKeyDown( int inKeyCode ) {
 void Picker::draw() {
     
 
-
     setDrawColor( 0.75, 0.75, 0.75, 1 );
     
     doublePair bgPos = { 0, -85 };
@@ -473,10 +475,8 @@ void Picker::draw() {
         doublePair pos = { -50, 40 };
         
         
-        for( int i=0; i<mNumResults; i++ ) {
-            
-
-            if( i == mSelectionIndex ) {
+        for( int i=0; i<mNumResults; i++ ) { // 对于每个结果
+            if( i == mSelectionIndex ) { // 如果是选中的结果
                 setDrawColor( 1, 1, 1, 1 );
                 doublePair selPos = pos;
                 selPos.x = 0;
@@ -484,42 +484,41 @@ void Picker::draw() {
             }
 
             setDrawColor( 1, 1, 1, 1 );
-            
-            
-            mPickable->draw( mResults[i], pos ); // ObjectRecord buug here
+            mPickable->draw( mResults[i], pos ); // ObjectRecord bug here
             
             doublePair textPos = pos;
-            textPos.x += 52;
+            textPos.x += 20;
             
             setDrawColor( mPickable->getTextColor( mResults[i] ) );
             
             const char *text = mPickable->getText( mResults[i] );
             
-            int textLen = strlen( text );
-            
-            int charsLeft = textLen;
-            
-            SimpleVector<char*> parts;
-            while( charsLeft > 0 ) {
-                char *part = autoSprintf( "%.9s", &( text[ textLen - charsLeft ] ) );
-                charsLeft -= strlen( part );
+            // int textLen = strlen( text );
+            // int charsLeft = textLen;
+            // SimpleVector<char*> parts;
+            // while( charsLeft > 0 ) {
+            //     char *part = autoSprintf( "%.45s", &( text[ textLen - charsLeft ] ) );
+            //     charsLeft -= strlen( part );
                 
                 
-                parts.push_back( part );
-            }
-            
-            textPos.y += ( parts.size() - 1 ) * 12 / 2;
-            for( int j=0; j<parts.size(); j++ ) {
-                
-                char *text = parts.getElementDirect( j );
-                char *trimmed = trimWhitespace( text );
-                
-                smallFont->drawString( trimmed, textPos, alignLeft ); // 绘制物品名
-                textPos.y -= 12;
+            //     parts.push_back( part );
+            // }
 
-                delete [] trimmed;
-                delete [] text;
-            }
+
+            // textPos.y += ( parts.size() - 1 ) * 12 / 2;
+            // for( int j=0; j<parts.size(); j++ ) {
+                
+            //     char *text = parts.getElementDirect( j );
+            //     char *trimmed = trimWhitespace( text );
+                
+            //     smallFont->drawString( trimmed, textPos, alignLeft ); // 绘制物品名
+            //     textPos.y -= 12; // 文字行间距
+
+            //     delete [] trimmed;
+            //     delete [] text;
+            // }
+
+            smallFont->drawString( text, textPos, alignLeft ); // 绘制物品名
             
             if( mResultsUnclickable[ i ] ) {
                 setDrawColor( 0, 0, 0, 0.65 );
